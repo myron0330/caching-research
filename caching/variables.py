@@ -4,7 +4,7 @@
 # **********************************************************************************#
 import os
 import ConfigParser
-from utils.random_utils import randint_array
+from . utils.random_utils import randint_array
 
 
 current_path = os.path.dirname(os.path.abspath(__file__))
