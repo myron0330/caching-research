@@ -18,6 +18,6 @@ class TestRandomUtils(unittest.TestCase):
     def test_zipf_array(self):
         result = zipf_array(self.a,
                             low_bound=self.low_bound,
-                            high_bound=self.high_bound,
+                            up_bound=self.high_bound,
                             size=self.size, seed=self.seed)
         print len(result), result

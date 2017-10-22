@@ -2,6 +2,7 @@
 # **********************************************************************************#
 #     File: Base station file
 # **********************************************************************************#
+from .. utils.dict_utils import DefaultDict
 
 
 class BaseStation(object):
@@ -16,15 +17,28 @@ class BaseStation(object):
         self.identity = identity
         self.cached_files = cached_files
         self.memory = memory
+        self.demand_statics = dict()
 
-    def caching_(self, files=set()):
+    def caching_(self, files=set(), reset=True):
         """
         Caching relevant files
 
         Args:
             files(set): files to be cached
+            reset(boolean): whether to clear cached other files
         """
+        if reset:
+            self.clear()
         self.cached_files |= files
+
+    def observe_(self, demands=list()):
+        """
+        Loading demands statistics
+        """
+        results = DefaultDict(default=0)
+        for demand in demands:
+            results[demand - 1] += 1
+        self.demand_statics = results
 
     def clear(self):
         """

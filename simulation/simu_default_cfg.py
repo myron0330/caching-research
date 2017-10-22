@@ -2,8 +2,13 @@
 # **********************************************************************************#
 #     File: 
 # **********************************************************************************#
-from caching.variables import Variables
+from caching.agent import Agent
 
-variable = Variables.from_('default.cfg')
-print variable.base_stations
-print variable.to_dict()
+
+agent = Agent.from_()
+agent.initialize()
+print agent.theta_hat_bk
+
+second_agent = Agent.from_(cfg_file='myron.cfg')
+second_agent.initialize()
+print second_agent.theta_hat_bk
