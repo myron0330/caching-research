@@ -10,15 +10,13 @@ class Agent(object):
     """
     The global player, whom to solve the caching problem.
     """
-    def __new__(cls):
-        if not hasattr(cls, '_instance'):
-            self = super(Agent, cls).__new__(cls)
-            self.base_stations = map(BaseStation, base_stations)
-            self.users = users
-            self.files = files
-            self.sizes = sizes
-            cls._instance = self
-        return cls._instance
+    def __init__(self):
+        self.base_stations = map(BaseStation, base_stations)
+        self.users = users
+        self.files = files
+        self.sizes = sizes
 
+    def initialize(self):
+        pass
 
 global_agent = Agent()
