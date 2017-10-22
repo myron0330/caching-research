@@ -30,3 +30,15 @@ sizes = randint_array(low_bound=lowest_size, high_bound=highest_size, size=file_
 v_bd = int(config.get('transmission rates', 'v_bd'))
 v_bb = int(config.get('transmission rates', 'v_bb'))
 v_cb = int(config.get('transmission rates', 'v_cb'))
+
+
+__all__ = [
+    'bs_number',
+    'file_number',
+    'lowest_size',
+    'highest_size',
+    'base_stations',
+    'users',
+    'files',
+    'sizes'
+]

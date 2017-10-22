@@ -10,8 +10,8 @@ class TestRandomUtils(unittest.TestCase):
 
     def setUp(self):
         self.a = 2
-        self.low_bound = 0
-        self.high_bound = 10
+        self.low_bound = 10
+        self.high_bound = 20
         self.size = 100
         self.seed = 0
 
