@@ -13,4 +13,6 @@ class TestAgent(unittest.TestCase):
 
     def test_init(self):
         print self.agent.base_stations[0].identity
+        print self.agent.base_stations[0].memory
         print self.agent.sizes
+        print self.agent.theta_hat

@@ -14,16 +14,17 @@ config.readfp(open(config_path))
 
 
 bs_number = int(config.get('base stations', 'number'))
+bs_memory = int(config.get('base stations', 'memory'))
 lowest_users = int(config.get('users', 'lowest_size'))
 highest_users = int(config.get('users', 'highest_size'))
-base_stations = range(1, bs_number+1)
+base_stations = range(bs_number)
 users = randint_array(low_bound=lowest_users, high_bound=highest_users, size=bs_number)
 
 
 file_number = int(config.get('files', 'number'))
 lowest_size = int(config.get('files', 'lowest_size'))
 highest_size = int(config.get('files', 'highest_size'))
-files = range(1, file_number+1)
+files = range(file_number)
 sizes = randint_array(low_bound=lowest_size, high_bound=highest_size, size=file_number)
 
 
@@ -34,6 +35,7 @@ v_cb = int(config.get('transmission rates', 'v_cb'))
 
 __all__ = [
     'bs_number',
+    'bs_memory',
     'file_number',
     'lowest_size',
     'highest_size',
