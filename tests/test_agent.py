@@ -17,5 +17,8 @@ class TestAgent(unittest.TestCase):
         print self.agent.sizes
         print self.agent.theta_hat_bk
 
-    def test_initialize(self):
-        self.agent.initialize()
+    def test_iter_with(self):
+        self.agent.iter_with_(algorithm=None, circles=15)
+        # print self.agent.theta_hat_bk
+        # print self.agent.t_bk
+        # print self.agent.c_bkt

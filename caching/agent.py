@@ -7,6 +7,7 @@ import numpy as np
 from . core import BaseStation
 from . variables import Variables
 from . utils.random_utils import zipf_array
+from . utils.dict_utils import DefaultDict
 
 
 class Agent(object):
@@ -18,9 +19,11 @@ class Agent(object):
         self.variables = variables
 
         # intermediate variables
-        self.time_slot = 0
+        self.t = 0
         self.theta_hat_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.t_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
+        self.c_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+        self.d_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -34,19 +37,26 @@ class Agent(object):
         variables.base_stations = map(BaseStation, variables.base_stations)
         return cls(variables)
 
-    def initialize(self):
+    def iter_with_(self, algorithm, circles=300):
         """
-        Algorithm initialize
+        algorithm iteration
+
+        Args:
+            algorithm(function): algorithm
+            circles(int): max iteration circles
         """
-        while self.time_slot < self.variables.file_number:
-            for base_station in self.variables.base_stations:
-                base_station.caching_(files={self.time_slot})
-                demand_array = self._generate_demands(base_station.identity)
-                base_station.observe_(demands=demand_array)
-                index, column = base_station.identity, self.time_slot
-                self.theta_hat_bk[index, column] = base_station.demand_statics[column] / self.variables.user_size
-                self.t_bk[index, column] = 1
-            self.time_slot += 1
+        while self.t < circles:
+            self._caching_files(algorithm)
+            self._observe_demands()
+            self._mab_update()
+            print '*' * 30
+            print 'current time', self.t
+            print self.c_bkt[self.t]
+            print self.theta_hat_bk
+            print self.t_bk
+            print '*' * 30
+            print '\n'
+            self.t += 1
 
     def _generate_demands(self, bs_identity):
         """
@@ -60,4 +70,41 @@ class Agent(object):
         return zipf_array(a=self.variables.zipf_a, low_bound=0,
                           up_bound=len(self.variables.files),
                           size=self.variables.users[bs_identity],
-                          seed=(self.time_slot * self.variables.bs_number + bs_identity) * self.variables.user_size)
+                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size)
+
+    def _observe_demands(self):
+        """
+        Observe demands at time slot t
+        """
+        for base_station in self.variables.base_stations:
+            identity = base_station.identity
+            demand_array = self._generate_demands(identity)
+            base_station.observe_(demands=demand_array)
+            demand_statics = [base_station.demand_statics[_] for _ in xrange(self.variables.file_number)]
+            self.d_bkt[self.t][identity, :] = demand_statics
+
+    def _mab_update(self):
+        """
+        Update parameters
+        """
+        if self.t < self.variables.file_number:
+            self.theta_hat_bk += self.d_bkt[self.t] * self.c_bkt[self.t] / self.variables.user_size
+        else:
+            self.theta_hat_bk = \
+                (self.theta_hat_bk * self.t_bk +
+                 self.d_bkt[self.t] * self.c_bkt[self.t] / self.variables.user_size) / (self.t_bk + self.c_bkt[self.t])
+        self.t_bk += self.c_bkt[self.t]
+
+    def _caching_files(self, algorithm=None):
+        """
+        Caching files at time slot t
+
+        Args:
+            algorithm(function): algorithm
+        """
+        if self.t < self.variables.file_number:
+            self.c_bkt[self.t][:, self.t] = 1
+        else:
+            theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
+            # self.c_bkt[self.t] = algorithm(self.variables, theta_est_bk, self.t_bk, self.c_bkt)
+            self.c_bkt[self.t][:, self.t % 10] = 1

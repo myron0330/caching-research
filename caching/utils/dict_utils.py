@@ -2,6 +2,7 @@
 # **********************************************************************************#
 #     File: dict utils
 # **********************************************************************************#
+from copy import copy
 
 
 class DefaultDict(dict):
@@ -19,5 +20,5 @@ class DefaultDict(dict):
 
     def __missing__(self, key):
         default = self._default() if isinstance(self._default, type) else self._default
-        self.__setitem__(key, default)
+        self.__setitem__(key, copy(default))
         return self.__getitem__(key)
