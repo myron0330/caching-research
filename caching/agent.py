@@ -55,7 +55,7 @@ class Agent(object):
             # print self.theta_hat_bk
             # print self.t_bk
             # print self.theta_est_bk
-            print self.theta_hat_bk
+            # print self.theta_hat_bk
             print '*' * 30
             print '\n'
             self.t += 1

@@ -16,5 +16,5 @@ def primal_dual_recover(variables, theta_est_bk):
     """
     solution = np.array(primal_dual_interior_method(variables, theta_est_bk)['x'])
     c_inv_bk = solution.reshape((variables.bs_number + 1, variables.file_number))
-    c_bk = 1 - c_inv_bk
+    c_bk = (1 - c_inv_bk)[:-1, :]
     return c_bk
