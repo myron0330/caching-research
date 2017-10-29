@@ -17,10 +17,10 @@ class Agent(object):
     def __init__(self, variables):
         # initialize parameters
         self.variables = variables
-
         # intermediate variables
         self.t = 0
         self.theta_hat_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
+        self.theta_est_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.t_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.c_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
         self.d_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
@@ -51,9 +51,11 @@ class Agent(object):
             self._mab_update()
             print '*' * 30
             print 'current time', self.t
-            print self.c_bkt[self.t]
+            # print self.c_bkt[self.t]
+            # print self.theta_hat_bk
+            # print self.t_bk
+            # print self.theta_est_bk
             print self.theta_hat_bk
-            print self.t_bk
             print '*' * 30
             print '\n'
             self.t += 1
@@ -105,6 +107,6 @@ class Agent(object):
         if self.t < self.variables.file_number:
             self.c_bkt[self.t][:, self.t] = 1
         else:
-            theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
-            # self.c_bkt[self.t] = algorithm(self.variables, theta_est_bk, self.t_bk, self.c_bkt)
+            self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
+            self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk)
             self.c_bkt[self.t][:, self.t % 10] = 1

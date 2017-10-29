@@ -4,6 +4,7 @@
 # **********************************************************************************#
 import unittest
 from caching.agent import Agent
+from caching.algorithms.core import primal_dual_recover
 
 
 class TestAgent(unittest.TestCase):
@@ -18,7 +19,13 @@ class TestAgent(unittest.TestCase):
         print self.agent.theta_hat_bk
 
     def test_iter_with(self):
-        self.agent.iter_with_(algorithm=None, circles=15)
+        self.agent.iter_with_(algorithm=None, circles=100)
+        # print self.agent.theta_hat_bk
+        # print self.agent.t_bk
+        # print self.agent.c_bkt
+
+    def test_iter_with_primal_dual_recover(self):
+        self.agent.iter_with_(algorithm=primal_dual_recover, circles=100)
         # print self.agent.theta_hat_bk
         # print self.agent.t_bk
         # print self.agent.c_bkt
