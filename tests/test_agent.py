@@ -5,6 +5,7 @@
 import unittest
 from caching.agent import Agent
 from caching.algorithms.core import primal_dual_recover
+from caching.algorithms.bnb import branch_and_bound
 
 
 class TestAgent(unittest.TestCase):
@@ -26,6 +27,12 @@ class TestAgent(unittest.TestCase):
 
     def test_iter_with_primal_dual_recover(self):
         self.agent.iter_with_(algorithm=primal_dual_recover, circles=500)
+        # print self.agent.theta_hat_bk
+        # print self.agent.t_bk
+        # print self.agent.c_bkt
+
+    def test_iter_with_branch_and_bound(self):
+        self.agent.iter_with_(algorithm=branch_and_bound, circles=500)
         # print self.agent.theta_hat_bk
         # print self.agent.t_bk
         # print self.agent.c_bkt
