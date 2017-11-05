@@ -122,7 +122,7 @@ class Agent(object):
         delta = max(self.variables.sizes) * (1 / self.variables.v_bd + 1 / self.variables.v_cb)
         c_bkt = self.c_bkt[self.t]
         d_bkt = self.d_bkt[self.t]
-        c_kt = self.c_bkt[self.t].sum(axis=0)
+        c_kt = np.sign(self.c_bkt[self.t].sum(axis=0))
         v_bd, v_bb, v_cb = self.variables.v_bd, self.variables.v_bb, self.variables.v_cb
         file_info = self.variables.file_info
         r_0 = 1
