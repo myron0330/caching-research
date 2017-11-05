@@ -25,7 +25,7 @@ class TestAgent(unittest.TestCase):
         # print self.agent.c_bkt
 
     def test_iter_with_primal_dual_recover(self):
-        self.agent.iter_with_(algorithm=primal_dual_recover, circles=100)
+        self.agent.iter_with_(algorithm=primal_dual_recover, circles=500)
         # print self.agent.theta_hat_bk
         # print self.agent.t_bk
         # print self.agent.c_bkt

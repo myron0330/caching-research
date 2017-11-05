@@ -3,6 +3,7 @@
 #     File: Agent files, the player of this problem
 # **********************************************************************************#
 from __future__ import division
+import pickle
 import numpy as np
 from . core import BaseStation
 from . variables import Variables
@@ -24,6 +25,7 @@ class Agent(object):
         self.t_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.c_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
         self.d_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+        self.rewards = list()
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -34,7 +36,7 @@ class Agent(object):
             cfg_file(string): config file name
         """
         variables = Variables.from_(cfg_file=cfg_file)
-        variables.base_stations = map(BaseStation, variables.base_stations)
+        variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
 
     def iter_with_(self, algorithm, circles=300):
@@ -49,16 +51,19 @@ class Agent(object):
             self._caching_files(algorithm)
             self._observe_demands()
             self._mab_update()
-            print '*' * 30
+            self._calculate_rewards()
+            print '*' * 60
             print 'current time', self.t
             # print self.c_bkt[self.t]
             # print self.theta_hat_bk
             # print self.t_bk
             # print self.theta_est_bk
             # print self.theta_hat_bk
-            print '*' * 30
+            print self.rewards[self.t]
+            print '*' * 60
             print '\n'
             self.t += 1
+        pickle.dump(self.rewards, open('../performance/rewards.pk', 'w+'))
 
     def _generate_demands(self, bs_identity):
         """
@@ -109,4 +114,26 @@ class Agent(object):
         else:
             self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
             self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk)
-            self.c_bkt[self.t][:, self.t % 10] = 1
+
+    def _calculate_rewards(self):
+        """
+        Calculate rewards of users
+        """
+        delta = max(self.variables.sizes) * (1 / self.variables.v_bd + 1 / self.variables.v_cb)
+        c_bkt = self.c_bkt[self.t]
+        d_bkt = self.d_bkt[self.t]
+        c_kt = self.c_bkt[self.t].sum(axis=0)
+        v_bd, v_bb, v_cb = self.variables.v_bd, self.variables.v_bb, self.variables.v_cb
+        file_info = self.variables.file_info
+        r_0 = 1
+        rewards = dict()
+        for base_station in self.variables.base_stations:
+            identity = base_station.identity
+            c_bt = c_bkt[identity, :]
+            d_bt = d_bkt[identity, :]
+            reward = 0
+            for f in self.variables.files:
+                latency = file_info[f] * (1. / v_bd + (1. - c_bt[f]) * (1. * c_kt[f] / v_bb + (1. - c_kt[f]) / v_cb))
+                reward += d_bt[f] * (delta - latency) * r_0
+            rewards[identity] = reward
+        self.rewards.append(rewards)
