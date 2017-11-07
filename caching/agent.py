@@ -5,7 +5,8 @@
 from __future__ import division
 import pickle
 import numpy as np
-from . core import BaseStation
+from . basic import BaseStation
+from . basic.rewards import calculate_rewards
 from . variables import Variables
 from . utils.random_utils import zipf_array
 from . utils.dict_utils import DefaultDict
@@ -113,27 +114,10 @@ class Agent(object):
             self.c_bkt[self.t][:, self.t] = 1
         else:
             self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
-            self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk)
+            self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t - 1])
 
     def _calculate_rewards(self):
         """
         Calculate rewards of users
         """
-        delta = max(self.variables.sizes) * (1 / self.variables.v_bd + 1 / self.variables.v_cb)
-        c_bkt = self.c_bkt[self.t]
-        d_bkt = self.d_bkt[self.t]
-        c_kt = np.sign(self.c_bkt[self.t].sum(axis=0))
-        v_bd, v_bb, v_cb = self.variables.v_bd, self.variables.v_bb, self.variables.v_cb
-        file_info = self.variables.file_info
-        r_0 = 1
-        rewards = dict()
-        for base_station in self.variables.base_stations:
-            identity = base_station.identity
-            c_bt = c_bkt[identity, :]
-            d_bt = d_bkt[identity, :]
-            reward = 0
-            for f in self.variables.files:
-                latency = file_info[f] * (1. / v_bd + (1. - c_bt[f]) * (1. * c_kt[f] / v_bb + (1. - c_kt[f]) / v_cb))
-                reward += d_bt[f] * (delta - latency) * r_0
-            rewards[identity] = reward
-        self.rewards.append(rewards)
+        self.rewards.append(calculate_rewards(self.variables, self.c_bkt[self.t], self.d_bkt[self.t]))

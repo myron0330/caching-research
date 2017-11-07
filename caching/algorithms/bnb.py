@@ -5,6 +5,8 @@
 from __future__ import division
 import numpy as np
 from cvxopt import matrix, solvers
+from . core import primal_dual_recover
+from .. basic.rewards import calculate_rewards
 from .. utils.tree_utils import BinaryTree
 
 
@@ -34,33 +36,43 @@ def _pruning_iterator(iterator, variables, height):
     """
     candidates = list()
     for candidate in iterator:
+        candidate_array = np.array(candidate)
+        size_array = np.array(variables.sizes[:len(candidate)])
         if len(candidate) == height:
-            if sum(candidate) == 0:
+            if variables.bs_memory - sum(candidate_array * size_array) > min(variables.sizes):
                 continue
         else:
-            candidate_array = np.array(candidate)
-            size_array = np.array(variables.sizes[:len(candidate)])
             if variables.bs_memory - sum(candidate_array * size_array) < min(variables.sizes[len(candidate):]):
                 continue
+        if variables.bs_memory - (height - candidate.count(0)) * max(variables.sizes) > min(variables.sizes):
+            continue
         candidates.append(candidate)
     return candidates
 
 
-def branch_and_bound(variables, theta_est_bk):
+def branch_and_bound(variables, theta_est_bk, d_bkt):
     """
     Branch and bound method
 
     Args:
         variables(variables): variable parameters
-        theta_est_bk(matrix): theta estimation
+        theta_est_bk(matrix): theta
+        d_bkt(matrix): demands
     """
-    tree = BinaryTree()
-    tree.generate(10)
-    iterator = tree.iterator_with_(pruning_func=_pruning_tree, variables=variables)
-    candidates = _pruning_iterator(iterator, variables, 10)
-    pass
+    c_bkt = primal_dual_recover(variables, theta_est_bk, recover=True)
+    rewards = calculate_rewards(variables, c_bkt, d_bkt, aggregate=True)
+    incumbent = (c_bkt, rewards)
+    head = list()
+    for _, in xrange(variables.bs_number):
+        tree = BinaryTree()
+        tree.generate(6)
+        iterator = list(tree.iterator_with_(pruning_func=_pruning_tree, variables=variables))
+        candidates = _pruning_iterator(iterator, variables, 6)
+        while candidates:
+            candidate = head + candidates.pop(0)
+            c_bkt = primal_dual_recover(variables, theta_est_bk, recover=True)
 
-    # # todo. branch and bound
+        # # todo. branch and bound
     # s_k = np.array(variables.sizes)
     # u_bk = np.ones((variables.bs_number, variables.file_number)) * variables.user_size
     # s_bk = np.array([variables.sizes]).repeat(variables.bs_number, axis=0)

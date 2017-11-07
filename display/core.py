@@ -24,11 +24,11 @@ def draw_algorithm_comparison_plot():
     """
     Display algorithm comparison figures
     """
-    rewards_50 = pickle.load(open('../performance/rewards.m-50.pk', 'r+'))
-    display_single_(rewards_50, all_curves=False, length=1000, line_width=1.8, title_size=20,
-                    label_size=16, color='#1E90FF', marker='', marker_size=3)
+    rewards_50 = pickle.load(open('../performance/rewards.pk', 'r+'))
+    display_single_(rewards_50, all_curves=False, length=40, line_width=2, title_size=20,
+                    label_size=16, color='#1E90FF', marker='p', marker_size=8)
 
 
 if __name__ == '__main__':
-    draw_memory_comparison_plot()
-    # draw_algorithm_comparison_plot()
+    # draw_memory_comparison_plot()
+    draw_algorithm_comparison_plot()

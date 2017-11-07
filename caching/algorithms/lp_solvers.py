@@ -7,7 +7,7 @@ import numpy as np
 from cvxopt import matrix, solvers
 
 
-def primal_dual_interior_method(variables, theta_est_bk):
+def primal_dual_interior_method(variables, theta_est_bk, *args, **kwargs):
     """
     Primal dual interior method
 
