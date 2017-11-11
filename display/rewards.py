@@ -84,7 +84,8 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90)
     legend = rewards_data.keys()
-    plt.ylim(min_y / 5 * 5, (max_y / 5 + 1) * 5)
+    diff_y = max_y - min_y
+    plt.ylim(min_y - diff_y * 0.05, max_y + diff_y * 0.05)
     plt.legend(legend, loc='best')
     plt.show()
 
