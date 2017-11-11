@@ -30,13 +30,12 @@ def memory_comparison(algorithm, circles=200, dump=True, display=True, **plot_kw
     return rewards_dict
 
 
-def display_memory_comparison(prefix, **plot_kwargs):
+def display_memory_comparison_by_(prefix, **plot_kwargs):
     """
     Display memory comparison.
 
     Args:
         prefix(prefix): prefix string
-        display_length(int): length
     """
     pks = sorted(filter(lambda x: x.startswith(prefix), listdir('../performance')),
                  key=lambda x: int(x.split('-')[2]), reverse=True)
@@ -49,7 +48,7 @@ def display_memory_comparison(prefix, **plot_kwargs):
 
 if __name__ == '__main__':
     plot_parameters = {
-        'display_length': 200,
+        'display_length': 1000,
         'line_width': 2,
         'title_size': 20,
         'label_size': 16,
@@ -60,4 +59,4 @@ if __name__ == '__main__':
         'y_label': u'回报'
     }
     # memory_comparison(algorithm=primal_dual_recover, circles=1000, dump=True, **plot_parameters)
-    display_memory_comparison('rewards.primal_dual_recover.6-10-', **plot_parameters)
+    display_memory_comparison_by_('rewards.primal_dual_recover.5-10-', **plot_parameters)
