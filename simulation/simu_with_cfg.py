@@ -29,7 +29,7 @@ def simulate_with_(algorithm, run=False, config=None, circles=200, **kwargs):
 
 if __name__ == '__main__':
     config_path = '../etc/myron.cfg'
-    current_algorithm = primal_dual_recover
-    # current_algorithm = branch_and_bound
+    # current_algorithm = primal_dual_recover
+    current_algorithm = branch_and_bound
     simulate_with_(current_algorithm, run=True, config=config_path, circles=50, all_curves=False, length=500, line_width=1.8,
                    title_size=20, label_size=16, color='#1E90FF')

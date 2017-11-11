@@ -4,10 +4,42 @@
 # **********************************************************************************#
 from __future__ import division
 import numpy as np
+from itertools import product
 from cvxopt import matrix, solvers
-from . core import primal_dual_recover
+from . core import primal_dual_recover, lp_solvers
 from .. basic.rewards import calculate_rewards
 from .. utils.tree_utils import BinaryTree
+
+
+def _normalize_(result):
+    """
+    Normalize result
+
+    Args:
+        result(numpy.ndarray): matrix like
+    """
+    x_axis = xrange(result.shape[0])
+    y_axis = xrange(result.shape[1])
+    for (row, column) in product(x_axis, y_axis):
+        if result[row, column] < 1e-3:
+            result[row, column] = 0
+        if result[row, column] > 0.99:
+            result[row, column] = 1
+    return result
+
+
+def _valid_solution(result):
+    """
+    Judge whether the result is valid solution
+
+    Args:
+          result(result): matrix like
+    """
+    c_bkt = result[:-1, :].reshape((result.shape[0] - 1) * result.shape[1])
+    for value in c_bkt:
+        if value not in [0., 1.]:
+            return False
+    return True
 
 
 def _pruning_tree(candidate, variables):
@@ -50,6 +82,15 @@ def _pruning_iterator(iterator, variables, height):
     return candidates
 
 
+def _pruning_node(candidate):
+    """
+    Pruning node begin with candidate
+    :param candidate:
+    :return:
+    """
+
+
+
 def branch_and_bound(variables, theta_est_bk, d_bkt):
     """
     Branch and bound method
@@ -63,14 +104,22 @@ def branch_and_bound(variables, theta_est_bk, d_bkt):
     rewards = calculate_rewards(variables, c_bkt, d_bkt, aggregate=True)
     incumbent = (c_bkt, rewards)
     head = list()
-    for _, in xrange(variables.bs_number):
+    for _ in xrange(variables.bs_number):
         tree = BinaryTree()
         tree.generate(6)
         iterator = list(tree.iterator_with_(pruning_func=_pruning_tree, variables=variables))
         candidates = _pruning_iterator(iterator, variables, 6)
         while candidates:
             candidate = head + candidates.pop(0)
-            c_bkt = primal_dual_recover(variables, theta_est_bk, recover=True)
+            candidate_inverse = map(lambda x: 1 - x, candidate)
+            c_bkt_inverse = lp_solvers(variables, theta_est_bk, candidate=candidate_inverse, recover=True)
+            c_bkt = 1 - c_bkt_inverse
+            assert isinstance(c_bkt, np.ndarray)
+            c_bkt = _normalize_(c_bkt)
+            validation = _valid_solution(c_bkt)
+            rewards = calculate_rewards(variables, c_bkt, d_bkt, aggregate=True)
+            if rewards < incumbent[1]:
+                _pruning_node(candidate)
 
         # # todo. branch and bound
     # s_k = np.array(variables.sizes)

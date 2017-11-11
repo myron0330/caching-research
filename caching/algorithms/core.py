@@ -3,20 +3,22 @@
 #     File:  Core algorithms
 # **********************************************************************************#
 import numpy as np
-from . lp_solvers import primal_dual_interior_method
+from . lp_solvers import primal_dual_interior_method, solvers, matrix
 from . recover import recover_from_
 
 
-def primal_dual_recover(variables, theta_est_bk, recover=True, *args, **kwargs):
+def primal_dual_recover(variables, theta_est_bk, recover=True, lp_method=None, *args, **kwargs):
     """
     Using primal dual interior method to solve the relaxing problem, recover with knapsack dynamic programming.
 
     Args:
         variables(variables): variable parameters
         theta_est_bk(matrix): theta estimation
+        lp_method(function): which lp method to use
         recover(boolean): whether to recover the algorithm
     """
-    solution = np.array(primal_dual_interior_method(variables, theta_est_bk)['x'])
+    lp_method = lp_method or primal_dual_interior_method
+    solution = np.array(lp_method(variables, theta_est_bk)['x'])
     c_inv_bk = solution.reshape((variables.bs_number + 1, variables.file_number))
     c_bk = (1 - c_inv_bk)[:-1, :]
     if recover:
@@ -32,6 +34,7 @@ def lp_solvers(variables, theta_est_bk, candidate, *args, **kwargs):
     Args:
         variables(variables): variable parameters
         theta_est_bk(matrix): theta estimation
+        candidate(list): candidate solvers
     """
     s_k = np.array(variables.sizes)
     u_bk = np.ones((variables.bs_number, variables.file_number)) * variables.user_size
@@ -45,7 +48,7 @@ def lp_solvers(variables, theta_est_bk, candidate, *args, **kwargs):
     cvx_st_h = np.zeros(variables.bs_number + variables.file_number * 2 + cvx_object_c.size * 2)
     _offset = 0
     for bs in xrange(variables.bs_number):
-        row = xrange(bs * variables.file_number, bs * variables.file_number + variables.file_number)
+        row = xrange(bs * variables.file_number, (bs + 1) * variables.file_number)
         column = bs + _offset
         cvx_st_g[row, column] = -1 * s_k
         cvx_st_h[column] = variables.bs_memory - s_k.sum()
@@ -67,6 +70,13 @@ def lp_solvers(variables, theta_est_bk, candidate, *args, **kwargs):
     _offset += cvx_object_c.size
     cvx_st_g[:, _offset:] = -1 * np.identity(cvx_object_c.size)
     cvx_st_h[_offset:] = 0
-    c, g, h = matrix(cvx_object_c), matrix(cvx_st_g.T), matrix(cvx_st_h)
+    # adjust with candidate and solve the problem
+    adj_c = cvx_object_c[len(candidate):]
+    adj_g = cvx_st_g[len(candidate):, :]
+    minus_item = cvx_st_g[:len(candidate)] * np.array([candidate]).T
+    minus_summation = minus_item.sum(axis=0)
+    adj_h = cvx_st_h - minus_summation
+    c, g, h = matrix(adj_c), matrix(adj_g.T), matrix(adj_h)
     solution = solvers.lp(c, g, h)
+    solution = np.array(candidate + list(solution['x'])).reshape((variables.bs_number + 1, variables.file_number))
     return solution
