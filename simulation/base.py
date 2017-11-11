@@ -27,7 +27,7 @@ def simulate_with_(algorithm, config=None, circles=200, dump=True, optimal=False
 
 
 if __name__ == '__main__':
-    config_path = '../etc/algo_comp.cfg'
+    config_path = '../etc/myron.cfg'
     current_algorithm = primal_dual_recover
     # current_algorithm = branch_and_bound
     rewards = simulate_with_(current_algorithm, config=config_path, circles=30,

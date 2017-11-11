@@ -17,7 +17,7 @@ def draw_memory_comparison_plot():
     rewards_30 = pickle.load(open('../performance/rewards.m-30.pk', 'r+'))
     rewards_20 = pickle.load(open('../performance/rewards.m-20.pk', 'r+'))
     rewards = OrderedDict(zip([20, 30, 50, 70, 90], [rewards_20, rewards_30, rewards_50, rewards_70, rewards_90]))
-    display_multiple_(rewards, length=1000, line_width=1.8, title_size=20, label_size=16, marker='', marker_size=3)
+    display_multiple_(rewards, display_length=1000, line_width=1.8, title_size=20, label_size=16, marker='', marker_size=3)
 
 
 def draw_algorithm_plot():
@@ -36,7 +36,7 @@ def draw_algorithm_comparison_plot(performance_files=list()):
     rewards_keys = map(lambda x: x.split('.')[1][2:], performance_files)
     rewards_values = map(lambda x: pickle.load(open('../performance/{}'.format(x), 'r+')), performance_files)
     rewards = OrderedDict(zip(rewards_keys, rewards_values))
-    display_multiple_(rewards, length=30, line_width=2, title_size=20, label_size=16, marker='*', marker_size=5)
+    display_multiple_(rewards, display_length=30, line_width=2, title_size=20, label_size=16, marker='*', marker_size=5)
 
 
 if __name__ == '__main__':

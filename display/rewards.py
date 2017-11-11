@@ -45,20 +45,24 @@ def display_single_(reward_data, all_curves=False, length=500, fig_size=(12, 8),
     plt.show()
 
 
-def display_multiple_(rewards_data, length=500, fig_size=(12, 8), line_width=1,
-                      title_size=18, label_size=16, marker=None, marker_size=10):
+def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
+                      title_size=18, label_size=16, marker=None, marker_size=10,
+                      title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益'):
     """
     Display multiple simulation rewards
 
     Args:
         rewards_data(dict): dict of dict of rewards
-        length(int): length of plots
+        display_length(int): length of plots
         fig_size(tuple): figure size
         line_width(float): line width
         title_size(float): title size
         label_size(float): label size
         marker(string): marker on point
         marker_size(float): marker size
+        title(string): figure title
+        x_label(string): x label string
+        y_label(string): y label string
     """
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_subplot(1, 1, 1)
@@ -66,17 +70,21 @@ def display_multiple_(rewards_data, length=500, fig_size=(12, 8), line_width=1,
     ax.spines['right'].set_color('black')
     ax.spines['top'].set_color('black')
     ax.spines['bottom'].set_color('black')
+    max_y, min_y = 0, 1e10
     for _, reward in enumerate(rewards_data.values()):
         frame = pd.DataFrame(reward)
         frame['total'] = frame.sum(axis=1)
-        plt.plot(frame['total'][:length], color=DEFAULT_COLORS.get(_), linewidth=line_width,
+        max_y = max(max_y, frame['total'][:display_length].max())
+        min_y = min(min_y, frame['total'][:display_length].min())
+        plt.plot(frame['total'][:display_length], color=DEFAULT_COLORS.get(_), linewidth=line_width,
                  marker=marker, markersize=marker_size)
-    plt.title(u'Memory-Reward对比图', fontsize=title_size, verticalalignment='bottom',
+    plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center', color='k')
-    plt.xlabel(u'迭代次数', fontsize=label_size, verticalalignment='top', horizontalalignment='center')
-    plt.ylabel(u'回报收益', fontsize=label_size, verticalalignment='bottom',
+    plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
+    plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90)
     legend = rewards_data.keys()
+    plt.ylim(min_y / 5 * 5, (max_y / 5 + 1) * 5)
     plt.legend(legend, loc='best')
     plt.show()
 
@@ -97,5 +105,5 @@ if __name__ == '__main__':
     rewards_30 = pickle.load(open('../performance/rewards.m-30.pk', 'r+'))
     rewards_20 = pickle.load(open('../performance/rewards.m-20.pk', 'r+'))
     rewards = OrderedDict(zip([20, 30, 50, 70, 90], [rewards_20, rewards_30, rewards_50, rewards_70, rewards_90]))
-    display_multiple_(rewards, length=1000, line_width=1.8,
+    display_multiple_(rewards, display_length=1000, line_width=1.8,
                       title_size=20, label_size=16, marker='', marker_size=3)
