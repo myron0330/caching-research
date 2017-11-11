@@ -4,8 +4,8 @@
 # **********************************************************************************#
 import unittest
 from caching.agent import Agent
-from caching.algorithms.core import primal_dual_recover
-from caching.algorithms.bnb import branch_and_bound
+from caching.algorithms.lp_solvers import primal_dual_recover
+from caching.algorithms.bnb_solvers import branch_and_bound
 
 
 class TestAgent(unittest.TestCase):

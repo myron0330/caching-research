@@ -4,7 +4,7 @@
 # **********************************************************************************#
 from __future__ import division
 import numpy as np
-from . core import primal_dual_recover, primal_dual_with_candidate
+from . lp_solvers import primal_dual_recover, primal_dual_with_candidate
 from .. basic.tools import calculate_rewards
 from .. utils.tree_utils import BinaryTree
 

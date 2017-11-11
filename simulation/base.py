@@ -3,7 +3,7 @@
 #     File: 
 # **********************************************************************************#
 from caching.agent import Agent
-from caching.algorithms.core import primal_dual_recover
+from caching.algorithms.lp_solvers import primal_dual_recover
 from display.rewards import display_single_
 
 
@@ -16,7 +16,6 @@ def simulate_with_(algorithm, config=None, circles=200, dump=True, optimal=False
         circles(int): circles
         dump(boolean): whether to dump result to file
         optimal(boolean): whether to find the optimal
-
     """
     config = config or '../etc/default.cfg'
     agent = Agent.from_(config)

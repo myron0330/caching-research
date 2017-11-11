@@ -10,7 +10,7 @@ from . basic.tools import calculate_rewards
 from . variables import Variables
 from . utils.random_utils import zipf_array
 from . utils.dict_utils import DefaultDict
-from . algorithms.bnb import branch_and_bound
+from . algorithms import branch_and_bound, primal_dual_recover
 
 
 class Agent(object):
@@ -58,7 +58,7 @@ class Agent(object):
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(branch_and_bound.func_name,
+                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(algorithm.func_name,
                                                                   self.variables.bs_number,
                                                                   self.variables.file_number,
                                                                   self.variables.bs_memory,
@@ -66,18 +66,18 @@ class Agent(object):
             pickle.dump(self.rewards, open(performance_file, 'w+'))
         return self.rewards
 
-    def find_optimal_with_bnd_(self, algorithm, circles=300, dump=True):
+    def find_optimal_with_bnd_(self, comparison_algorithm, circles=300, dump=True):
         """
         algorithm iteration
 
         Args:
-            algorithm(function): algorithm
+            comparison_algorithm(function): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
         """
         theta_est = dict()
         while self.t < circles:
-            self._caching_files(algorithm)
+            self._caching_files(comparison_algorithm)
             theta_est[self.t] = self.theta_est_bk
             self._observe_demands()
             self._mab_update()

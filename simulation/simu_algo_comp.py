@@ -2,22 +2,40 @@
 # **********************************************************************************#
 #     File: 
 # **********************************************************************************#
-from . base import simulate_with_
+from caching.algorithms import branch_and_bound, primal_dual_recover
+from display.rewards import display_multiple_
+from simulation.base import simulate_with_
 
 
-def algorithm_comparison(algorithms, config=None, dump=True):
+def algorithm_comparison(algorithms, comparison_algorithm=None,
+                         config=None, circles=200, dump=True, display=True):
     """
     Algorithm comparison
-    :param algorithms:
-    :return:
+
+    Args:
+        algorithms(list): algorithm
+        comparison_algorithm(function): comparison algorithm
+        config(string): config path
+        circles(int): circles
+        dump(boolean): whether to dump result to file
+        display(boolean): whether to display
     """
+    rewards_dict = dict()
+    for algorithm in algorithms:
+        rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config,  circles=circles,
+                                                           dump=dump, optimal=False)
+    if comparison_algorithm:
+        rewards_dict[branch_and_bound.func_name] = simulate_with_(comparison_algorithm, config=config, circles=circles,
+                                                                  dump=dump, optimal=True)
+    if display:
+        display_multiple_(rewards_dict, length=circles, line_width=2, title_size=20,
+                          label_size=16, marker='*', marker_size=3)
+    return rewards_dict
 
 
 if __name__ == '__main__':
-    config_path = '../etc/algo_comp.cfg'
-    current_algorithm = primal_dual_recover
-    # current_algorithm = branch_and_bound
-    rewards = simulate_with_(current_algorithm, config=config_path, circles=30,
-                             dump=False, optimal=False)
-    display_single_(rewards, all_curves=False, length=500, line_width=1.8,
-                    title_size=20, label_size=16, color='#1E90FF')
+    config_path = '../etc/myron.cfg'
+    t_algorithms = [primal_dual_recover]
+    t_comparison_algorithm = primal_dual_recover
+    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
+                         config=config_path, circles=30, dump=False)

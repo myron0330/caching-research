@@ -51,7 +51,7 @@ def display_multiple_(rewards_data, length=500, fig_size=(12, 8), line_width=1,
     Display multiple simulation rewards
 
     Args:
-        rewards_data(OrderedDict): dict of dict of rewards
+        rewards_data(dict): dict of dict of rewards
         length(int): length of plots
         fig_size(tuple): figure size
         line_width(float): line width

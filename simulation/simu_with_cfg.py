@@ -4,7 +4,7 @@
 # **********************************************************************************#
 import pickle
 from caching.agent import Agent
-from caching.algorithms.core import primal_dual_recover
+from caching.algorithms.lp_solvers import primal_dual_recover
 from display.rewards import display_single_
 
 
