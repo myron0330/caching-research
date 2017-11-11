@@ -3,8 +3,26 @@
 #     File:  Core algorithms
 # **********************************************************************************#
 import numpy as np
+from itertools import product
 from . lp_solvers import primal_dual_interior_method, solvers, matrix
 from . recover import recover_from_
+
+
+def _normalize_(result):
+    """
+    Normalize result
+
+    Args:
+        result(numpy.ndarray): matrix like
+    """
+    x_axis = xrange(result.shape[0])
+    y_axis = xrange(result.shape[1])
+    for (row, column) in product(x_axis, y_axis):
+        if result[row, column] < 1e-3:
+            result[row, column] = 0
+        if result[row, column] > 0.99:
+            result[row, column] = 1
+    return result
 
 
 def primal_dual_recover(variables, theta_est_bk, recover=True, lp_method=None, *args, **kwargs):
@@ -27,15 +45,16 @@ def primal_dual_recover(variables, theta_est_bk, recover=True, lp_method=None, *
         return c_bk
 
 
-def lp_solvers(variables, theta_est_bk, candidate, *args, **kwargs):
+def primal_dual_with_candidate(variables, theta_est_bk, candidate, *args, **kwargs):
     """
-    Primal dual interior method
+    Primal dual interior method with candidate
 
     Args:
         variables(variables): variable parameters
         theta_est_bk(matrix): theta estimation
         candidate(list): candidate solvers
     """
+    candidate = map(lambda x: 1 - x, candidate)
     s_k = np.array(variables.sizes)
     u_bk = np.ones((variables.bs_number, variables.file_number)) * variables.user_size
     s_bk = np.array([variables.sizes]).repeat(variables.bs_number, axis=0)
@@ -79,4 +98,7 @@ def lp_solvers(variables, theta_est_bk, candidate, *args, **kwargs):
     c, g, h = matrix(adj_c), matrix(adj_g.T), matrix(adj_h)
     solution = solvers.lp(c, g, h)
     solution = np.array(candidate + list(solution['x'])).reshape((variables.bs_number + 1, variables.file_number))
-    return solution
+    c_bkt = 1 - solution
+    assert isinstance(c_bkt, np.ndarray)
+    c_bkt = _normalize_(c_bkt)
+    return c_bkt

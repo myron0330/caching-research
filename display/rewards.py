@@ -76,9 +76,8 @@ def display_multiple_(rewards_data, length=500, fig_size=(12, 8), line_width=1,
     plt.xlabel(u'迭代次数', fontsize=label_size, verticalalignment='top', horizontalalignment='center')
     plt.ylabel(u'回报收益', fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90)
-    legend = ['Memory-{}'.format(_) for _ in rewards_data.keys()]
+    legend = rewards_data.keys()
     plt.legend(legend, loc='best')
-    plt.ylim(10, 65)
     plt.show()
 
 
@@ -92,8 +91,6 @@ DEFAULT_COLORS = {
 
 if __name__ == '__main__':
     import pickle
-    # display_single_(rewards, all_curves=False, length=1000, line_width=1.8, title_size=20,
-    #                 label_size=16, color='#1E90FF', marker='*', marker_size=3)
     rewards_90 = pickle.load(open('../performance/rewards.m-90.pk', 'r+'))
     rewards_70 = pickle.load(open('../performance/rewards.m-70.pk', 'r+'))
     rewards_50 = pickle.load(open('../performance/rewards.m-50.pk', 'r+'))

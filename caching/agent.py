@@ -6,10 +6,11 @@ from __future__ import division
 import pickle
 import numpy as np
 from . basic import BaseStation
-from . basic.rewards import calculate_rewards
+from . basic.tools import calculate_rewards
 from . variables import Variables
 from . utils.random_utils import zipf_array
 from . utils.dict_utils import DefaultDict
+from . algorithms.bnb import branch_and_bound
 
 
 class Agent(object):
@@ -40,31 +41,63 @@ class Agent(object):
         variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
 
-    def iter_with_(self, algorithm, circles=300):
+    def iter_with_(self, algorithm, circles=300, dump=True):
         """
         algorithm iteration
 
         Args:
             algorithm(function): algorithm
             circles(int): max iteration circles
+            dump(boolean): whether to dump results
         """
         while self.t < circles:
             self._caching_files(algorithm)
             self._observe_demands()
             self._mab_update()
             self._calculate_rewards()
-            print '*' * 60
-            print 'current time', self.t
-            # print self.c_bkt[self.t]
-            # print self.theta_hat_bk
-            # print self.t_bk
-            # print self.theta_est_bk
-            # print self.theta_hat_bk
-            print self.rewards[self.t]
-            print '*' * 60
-            print '\n'
             self.t += 1
-        pickle.dump(self.rewards, open('../performance/rewards.pk', 'w+'))
+        if dump:
+            performance_file = \
+                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(branch_and_bound.func_name,
+                                                                  self.variables.bs_number,
+                                                                  self.variables.file_number,
+                                                                  self.variables.bs_memory,
+                                                                  self.variables.user_size)
+            pickle.dump(self.rewards, open(performance_file, 'w+'))
+        return self.rewards
+
+    def find_optimal_with_bnd_(self, algorithm, circles=300, dump=True):
+        """
+        algorithm iteration
+
+        Args:
+            algorithm(function): algorithm
+            circles(int): max iteration circles
+            dump(boolean): whether to dump results
+        """
+        theta_est = dict()
+        while self.t < circles:
+            self._caching_files(algorithm)
+            theta_est[self.t] = self.theta_est_bk
+            self._observe_demands()
+            self._mab_update()
+            self._calculate_rewards()
+            self.t += 1
+        self.t = 0
+        rewards = list()
+        while self.t < circles:
+            c_bkt = branch_and_bound(self.variables, theta_est[self.t], self.d_bkt[self.t])
+            rewards.append(calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t]))
+            self.t += 1
+        if dump:
+            performance_file = \
+                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(branch_and_bound.func_name,
+                                                                  self.variables.bs_number,
+                                                                  self.variables.file_number,
+                                                                  self.variables.bs_memory,
+                                                                  self.variables.user_size)
+            pickle.dump(rewards, open(performance_file, 'w+'))
+        return rewards
 
     def _generate_demands(self, bs_identity):
         """
@@ -103,18 +136,20 @@ class Agent(object):
                  self.d_bkt[self.t] * self.c_bkt[self.t] / self.variables.user_size) / (self.t_bk + self.c_bkt[self.t])
         self.t_bk += self.c_bkt[self.t]
 
-    def _caching_files(self, algorithm=None):
+    def _caching_files(self, algorithm=None, initialize_circles=None):
         """
         Caching files at time slot t
 
         Args:
             algorithm(function): algorithm
+            initialize_circles(int): initialize circles
         """
-        if self.t < self.variables.file_number:
+        initialize_circles = initialize_circles if initialize_circles is not None else self.variables.file_number
+        if self.t < initialize_circles:
             self.c_bkt[self.t][:, self.t] = 1
         else:
             self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
-            self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t - 1])
+            self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t])
 
     def _calculate_rewards(self):
         """
