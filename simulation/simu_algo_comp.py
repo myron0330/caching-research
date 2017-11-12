@@ -67,23 +67,24 @@ def display_single_algorithm_by_(file_name, **plot_kwargs):
 
 if __name__ == '__main__':
     plot_parameters = {
-        'display_length': 40,
+        'display_length': 50,
         'line_width': 2,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
-        'marker_size': 6,
+        'marker_size': 8,
         'title': u'算法回报对比图',
         'x_label': u'迭代次数',
         'y_label': u'回报',
         'all_curves': True,
-        'with_standardize': True,
+        'with_standardize': False,
         'standardize_init': 6,
+        'sigma': 3,
     }
-    # t_algorithms = [primal_dual_recover]
+    t_algorithms = [primal_dual_recover]
     # t_comparison_algorithm = primal_dual_recover
     # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
-    #                      circles=100, dump=False, **plot_parameters)
-    display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-200.pk',
-                                      'rewards.primal_dual_recover.4-6-15-200.pk'], **plot_parameters)
-    # display_single_algorithm_by_('rewards.branch_and_bound.4-6-15-200.pk', **plot_parameters)
+    #                      circles=100, dump=True, **plot_parameters)
+    display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-300.pk',
+                                      'rewards.primal_dual_recover.4-6-15-300.pk'], **plot_parameters)
+    # display_single_algorithm_by_('rewards.branch_and_bound.4-6-15-300.pk', **plot_parameters)

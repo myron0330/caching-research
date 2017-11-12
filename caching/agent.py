@@ -146,7 +146,7 @@ class Agent(object):
         """
         initialize_circles = initialize_circles if initialize_circles is not None else self.variables.file_number
         if self.t < initialize_circles:
-            self.c_bkt[self.t][:, self.t] = 1
+            self.c_bkt[self.t][:, self.variables.file_number - self.t - 1] = 1
         else:
             self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
             self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t])

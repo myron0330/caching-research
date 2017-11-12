@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 
 
-AVAILABLE_MARKERS = ['o', '*', 's', '^', '<', '>']
+AVAILABLE_MARKERS = ['o','*' , 'p', 's', '^', '<', '>']
 
 
 def _standardize_(array, sigma=1.5):
@@ -71,7 +71,7 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
 
 def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
                       title_size=18, label_size=16, marker=None, marker_size=10,
-                      with_standardize=False, standardize_init=0,
+                      with_standardize=False, standardize_init=0, sigma=1.5,
                       title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益', **kwargs):
     """
     Display multiple simulation rewards
@@ -85,6 +85,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         label_size(float): label size
         with_standardize(boolean): whether to do standardize
         standardize_init(int): standardize init value
+        sigma(int): sigma threshold
         marker(string): marker on point
         marker_size(float): marker size
         title(string): figure title
@@ -108,7 +109,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
             current_marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
         curve = list(frame['total'][:display_length])
         if with_standardize:
-            curve = curve[:standardize_init] + _standardize_(curve[standardize_init:])
+            curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
         plt.plot(curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
                  marker=current_marker, markersize=marker_size, markerfacecolor='None',
                  markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)

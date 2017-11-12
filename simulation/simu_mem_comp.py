@@ -59,6 +59,7 @@ if __name__ == '__main__':
         'y_label': u'回报',
         'with_standardize': True,
         'standardize_init': 6,
+        'sigma': 1.5,
     }
     # memory_comparison(algorithm=primal_dual_recover, circles=1000, dump=True, **plot_parameters)
     display_memory_comparison_by_('rewards.primal_dual_recover.4-6-', **plot_parameters)
