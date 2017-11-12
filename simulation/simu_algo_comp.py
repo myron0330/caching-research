@@ -68,6 +68,5 @@ if __name__ == '__main__':
     # t_comparison_algorithm = primal_dual_recover
     # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
     #                      circles=100, dump=False, **plot_parameters)
-
     display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-200.pk',
                                       'rewards.primal_dual_recover.4-6-15-200.pk'], **plot_parameters)
