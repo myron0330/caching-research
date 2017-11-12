@@ -2,6 +2,7 @@
 # **********************************************************************************#
 #     File:  Display rewards
 # **********************************************************************************#
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import OrderedDict
@@ -10,9 +11,22 @@ from collections import OrderedDict
 AVAILABLE_MARKERS = ['o', '*', 's', '^', '<', '>']
 
 
+def _standardize_(array, sigma=1.5):
+    """
+    Standardize array
+
+    Args:
+        array(list): standardize array
+        sigma(int): sigma threshold
+    """
+    x_mean = np.mean(array)
+    x_std = np.std(array)
+    return map(lambda a: max(x_mean - sigma * x_std, min(x_mean + sigma * x_std, a)), array)
+
+
 def display_single_(reward_data, all_curves=False, display_length=500, fig_size=(12, 8), line_width=1,
                     title_size=18, label_size=16, color='r', marker=None, marker_size=10,
-                    title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益'):
+                    title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益', **kwargs):
     """
     Display single simulation rewards
 
@@ -41,9 +55,12 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
     ax.spines['bottom'].set_color('black')
     if all_curves:
         for column in frame.columns:
-            plt.plot(frame[column][:display_length], linewidth=line_width, marker=marker, markersize=marker_size)
+            plt.plot(frame[column][:display_length], linewidth=line_width, marker=marker, markersize=marker_size,
+                     markerfacecolor='None',  markeredgewidth=line_width)
     else:
-        plt.plot(frame['total'][:display_length], color=color, linewidth=line_width, marker=marker, markersize=marker_size)
+        plt.plot(frame['total'][:display_length], color=color, linewidth=line_width, marker=marker,
+                 markersize=marker_size, markeredgecolor=color,
+                 markerfacecolor='None',  markeredgewidth=line_width)
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center')
     plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
@@ -54,7 +71,8 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
 
 def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
                       title_size=18, label_size=16, marker=None, marker_size=10,
-                      title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益'):
+                      with_standardize=False, standardize_init=0,
+                      title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益', **kwargs):
     """
     Display multiple simulation rewards
 
@@ -65,6 +83,8 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         line_width(float): line width
         title_size(float): title size
         label_size(float): label size
+        with_standardize(boolean): whether to do standardize
+        standardize_init(int): standardize init value
         marker(string): marker on point
         marker_size(float): marker size
         title(string): figure title
@@ -86,17 +106,21 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         current_marker = marker
         if marker == '':
             current_marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
-        plt.plot(frame['total'][:display_length], color=DEFAULT_COLORS.get(_), linewidth=line_width,
-                 marker=current_marker, markersize=marker_size)
+        curve = list(frame['total'][:display_length])
+        if with_standardize:
+            curve = curve[:standardize_init] + _standardize_(curve[standardize_init:])
+        plt.plot(curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+                 marker=current_marker, markersize=marker_size, markerfacecolor='None',
+                 markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center', color='k')
     plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
     plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90)
-    legend = rewards_data.keys()
+    legend = map(lambda x: x.upper(), rewards_data.keys())
     diff_y = max_y - min_y
     plt.ylim(min_y - diff_y * 0.05, max_y + diff_y * 0.05)
-    plt.legend(legend, loc='best')
+    plt.legend(legend, loc=4)
     plt.show()
 
 
