@@ -52,7 +52,7 @@ if __name__ == '__main__':
         'line_width': 2,
         'title_size': 20,
         'label_size': 16,
-        'marker': '',
+        'marker': None,
         'marker_size': 3,
         'title': u'存储容量-回报对比图',
         'x_label': u'迭代次数',

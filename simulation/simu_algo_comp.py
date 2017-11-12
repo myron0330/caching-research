@@ -6,7 +6,7 @@ import pickle
 from os import listdir
 from collections import OrderedDict
 from caching.algorithms import branch_and_bound, primal_dual_recover
-from display.rewards import display_multiple_
+from display.rewards import display_multiple_, display_single_
 from simulation.base import simulate_with_
 
 
@@ -22,7 +22,6 @@ def algorithm_comparison(algorithms, comparison_algorithm=None,
         circles(int): circles
         dump(boolean): whether to dump result to file
         display(boolean): whether to display
-        display_length(int): display length
     """
     config = '../etc/algorithm_comparison.cfg'
     rewards_dict = dict()
@@ -52,21 +51,37 @@ def display_algorithm_comparison_by_(file_names, **plot_kwargs):
     display_multiple_(rewards_dict, **plot_kwargs)
 
 
+def display_single_algorithm_by_(file_name, **plot_kwargs):
+    """
+    Display memory comparison.
+
+    Args:
+        file_name(string): file names
+    """
+    rewards_dict = OrderedDict()
+    rewards = pickle.load(open('../performance/{}'.format(file_name), 'r+'))
+    key = file_name.split('.')[1]
+    rewards_dict[key] = rewards
+    display_single_(rewards, **plot_kwargs)
+
+
 if __name__ == '__main__':
     plot_parameters = {
-        'display_length': 30,
-        'line_width': 2,
+        'display_length': 200,
+        'line_width': 3,
         'title_size': 20,
         'label_size': 16,
-        'marker': '*',
-        'marker_size': 5,
+        'marker': '',
+        'marker_size': 10,
         'title': u'算法回报对比图',
         'x_label': u'迭代次数',
-        'y_label': u'回报'
+        'y_label': u'回报',
+        'all_curves': True,
     }
     # t_algorithms = [primal_dual_recover]
     # t_comparison_algorithm = primal_dual_recover
     # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
     #                      circles=100, dump=False, **plot_parameters)
-    display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-200.pk',
-                                      'rewards.primal_dual_recover.4-6-15-200.pk'], **plot_parameters)
+    # display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-200.pk',
+    #                                   'rewards.primal_dual_recover.4-6-15-200.pk'], **plot_parameters)
+    display_single_algorithm_by_('rewards.branch_and_bound.4-6-15-200.pk', **plot_parameters)

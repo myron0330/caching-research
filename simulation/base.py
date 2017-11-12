@@ -32,5 +32,5 @@ if __name__ == '__main__':
     # current_algorithm = branch_and_bound
     rewards = simulate_with_(current_algorithm, config=config_path, circles=30,
                              dump=False, optimal=False)
-    display_single_(rewards, all_curves=False, length=500, line_width=1.8,
+    display_single_(rewards, all_curves=False, display_length=500, line_width=1.8,
                     title_size=20, label_size=16, color='#1E90FF')

@@ -7,15 +7,19 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 
 
-def display_single_(reward_data, all_curves=False, length=500, fig_size=(12, 8), line_width=1,
-                    title_size=18, label_size=16, color='r', marker=None, marker_size=10):
+AVAILABLE_MARKERS = ['o', '*', 's', '^', '<', '>']
+
+
+def display_single_(reward_data, all_curves=False, display_length=500, fig_size=(12, 8), line_width=1,
+                    title_size=18, label_size=16, color='r', marker=None, marker_size=10,
+                    title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益'):
     """
     Display single simulation rewards
 
     Args:
         reward_data(dict): dict of rewards
         all_curves(boolean): whether to display all reward curves
-        length(int): length of plots
+        display_length(int): length of plots
         fig_size(tuple): figure size
         line_width(float): line width
         title_size(float): title size
@@ -23,6 +27,9 @@ def display_single_(reward_data, all_curves=False, length=500, fig_size=(12, 8),
         color(string): color of main curve
         marker(string): marker on point
         marker_size(float): marker size
+        title(string): figure title
+        x_label(string): x label string
+        y_label(string): y label string
     """
     frame = pd.DataFrame(reward_data)
     frame['total'] = frame.sum(axis=1)
@@ -34,13 +41,13 @@ def display_single_(reward_data, all_curves=False, length=500, fig_size=(12, 8),
     ax.spines['bottom'].set_color('black')
     if all_curves:
         for column in frame.columns:
-            plt.plot(frame[column][:length], linewidth=line_width,  marker=marker, markersize=marker_size)
+            plt.plot(frame[column][:display_length], linewidth=line_width, marker=marker, markersize=marker_size)
     else:
-        plt.plot(frame['total'][:length], color=color, linewidth=line_width, marker=marker, markersize=marker_size)
-    plt.title(u'算法-缓存回报对比图', fontsize=title_size, verticalalignment='bottom',
+        plt.plot(frame['total'][:display_length], color=color, linewidth=line_width, marker=marker, markersize=marker_size)
+    plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center')
-    plt.xlabel(u'迭代次数', fontsize=label_size, verticalalignment='top', horizontalalignment='center')
-    plt.ylabel(u'回报收益', fontsize=label_size, verticalalignment='bottom',
+    plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
+    plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90)
     plt.show()
 
@@ -76,8 +83,11 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         frame['total'] = frame.sum(axis=1)
         max_y = max(max_y, frame['total'][:display_length].max())
         min_y = min(min_y, frame['total'][:display_length].min())
+        current_marker = marker
+        if marker == '':
+            current_marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
         plt.plot(frame['total'][:display_length], color=DEFAULT_COLORS.get(_), linewidth=line_width,
-                 marker=marker, markersize=marker_size)
+                 marker=current_marker, markersize=marker_size)
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center', color='k')
     plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
