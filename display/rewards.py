@@ -120,7 +120,9 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
                horizontalalignment='center', rotation=90)
     legend = map(lambda x: x.upper(), rewards_data.keys())
     diff_y = max_y - min_y
-    plt.ylim(min_y - diff_y * 0.05, max_y + diff_y * 0.05)
+    y_min_lim = kwargs.get('y_min_lim', min_y - diff_y * 0.05)
+    y_max_lim = kwargs.get('y_max_lim', max_y + diff_y * 0.05)
+    plt.ylim(y_min_lim, y_max_lim)
     plt.legend(legend, loc=4)
     plt.show()
 

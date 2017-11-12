@@ -48,18 +48,19 @@ def display_memory_comparison_by_(prefix, **plot_kwargs):
 
 if __name__ == '__main__':
     plot_parameters = {
-        'display_length': 500,
+        'display_length': 200,
         'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
-        'marker': None,
-        'marker_size': 3,
+        'marker': '',
+        'marker_size': 6,
         'title': u'存储容量-回报对比图',
         'x_label': u'迭代次数',
         'y_label': u'回报',
         'with_standardize': True,
         'standardize_init': 6,
-        'sigma': 1.5,
+        'sigma': 1,
+        'y_min_lim': 5
     }
     # memory_comparison(algorithm=primal_dual_recover, circles=1000, dump=True, **plot_parameters)
     display_memory_comparison_by_('rewards.primal_dual_recover.4-6-', **plot_parameters)
