@@ -23,7 +23,7 @@ def randint_array(low_bound, up_bound, size=None, seed=0):
     return array
 
 
-def zipf_array(a, low_bound=None, up_bound=None, size=None, seed=0):
+def zipf_array(a, low_bound=None, up_bound=None, size=None, seed=100000):
     """
     Get random variables that satisfies Zipf law.
 

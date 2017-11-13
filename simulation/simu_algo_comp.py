@@ -3,9 +3,8 @@
 #     File: 
 # **********************************************************************************#
 import pickle
-from os import listdir
 from collections import OrderedDict
-from caching.algorithms import branch_and_bound, primal_dual_recover
+from caching.algorithms import *
 from display.rewards import display_multiple_, display_single_
 from simulation.base import simulate_with_
 
@@ -24,13 +23,17 @@ def algorithm_comparison(algorithms, comparison_algorithm=None,
         display(boolean): whether to display
     """
     config = '../etc/algorithm_comparison.cfg'
-    rewards_dict = dict()
-    for algorithm in algorithms:
-        rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config,  circles=circles,
-                                                           dump=dump, optimal=False)
+    rewards_dict = OrderedDict()
     if comparison_algorithm:
         rewards_dict[branch_and_bound.func_name] = simulate_with_(comparison_algorithm, config=config, circles=circles,
-                                                                  dump=dump, optimal=True)
+                                                                  dump=dump, algorithm_type='optimal')
+    for algorithm in algorithms:
+        rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config, circles=circles,
+                                                           dump=dump)
+    rewards_dict[lfu.func_name] = simulate_with_(lfu, config=config, circles=circles, dump=dump,
+                                                 algorithm_type='comparison')
+    rewards_dict[lru.func_name] = simulate_with_(lru, config=config, circles=circles, dump=dump,
+                                                 algorithm_type='comparison')
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
     return rewards_dict
@@ -80,11 +83,13 @@ if __name__ == '__main__':
         'with_standardize': False,
         'standardize_init': 6,
         'sigma': 3,
+        'y_max_lim': 25,
+        'legend_size': 12,
     }
     t_algorithms = [primal_dual_recover]
-    # t_comparison_algorithm = primal_dual_recover
-    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
-    #                      circles=100, dump=True, **plot_parameters)
-    display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-300.pk',
-                                      'rewards.primal_dual_recover.4-6-15-300.pk'], **plot_parameters)
+    t_comparison_algorithm = primal_dual_recover
+    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
+                         circles=30, dump=False, **plot_parameters)
+    # display_algorithm_comparison_by_(['rewards.branch_and_bound.4-6-15-300.pk',
+    #                                   'rewards.primal_dual_recover.4-6-15-300.pk'], **plot_parameters)
     # display_single_algorithm_by_('rewards.branch_and_bound.4-6-15-300.pk', **plot_parameters)

@@ -24,7 +24,7 @@ def memory_comparison(algorithm, circles=200, dump=True, display=True, **plot_kw
     rewards_dict = dict()
     for config in configs:
         key = 'Memory-{}'.format(config.split('_')[-1]).split('.')[0]
-        rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles, dump=dump, optimal=False)
+        rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles, dump=dump)
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
     return rewards_dict
@@ -48,7 +48,7 @@ def display_memory_comparison_by_(prefix, **plot_kwargs):
 
 if __name__ == '__main__':
     plot_parameters = {
-        'display_length': 200,
+        'display_length': 100,
         'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,

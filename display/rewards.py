@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 
 
-AVAILABLE_MARKERS = ['o','*' , 'p', 's', '^', '<', '>']
+AVAILABLE_MARKERS = ['o', '*', 'p', 's', '^', '<', '>']
 
 
 def _standardize_(array, sigma=1.5):
@@ -70,7 +70,7 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
 
 
 def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
-                      title_size=18, label_size=16, marker=None, marker_size=10,
+                      title_size=18, label_size=16, marker=None, marker_size=10, legend_size=10,
                       with_standardize=False, standardize_init=0, sigma=1.5,
                       title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益', **kwargs):
     """
@@ -88,6 +88,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         sigma(int): sigma threshold
         marker(string): marker on point
         marker_size(float): marker size
+        legend_size(float): legend_size
         title(string): figure title
         x_label(string): x label string
         y_label(string): y label string
@@ -123,17 +124,17 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     y_min_lim = kwargs.get('y_min_lim', min_y - diff_y * 0.05)
     y_max_lim = kwargs.get('y_max_lim', max_y + diff_y * 0.05)
     plt.ylim(y_min_lim, y_max_lim)
-    plt.legend(legend, loc=4)
+    plt.legend(legend, loc='best', fontsize=legend_size)
     plt.show()
 
-
 DEFAULT_COLORS = {
-    0: '#1E90FF',
-    1: '#32CD32',
-    2: '#FA8072',
-    3: '#FFD700',
-    4: '#363636'
+    0: '#363636',
+    1: '#FA8072',
+    2: '#1E90FF',
+    3: '#32CD32',
+    4: '#FFD700',
 }
+
 
 if __name__ == '__main__':
     import pickle

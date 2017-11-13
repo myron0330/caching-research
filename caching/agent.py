@@ -3,6 +3,7 @@
 #     File: Agent files, the player of this problem
 # **********************************************************************************#
 from __future__ import division
+import heapq
 import pickle
 import numpy as np
 from . basic import BaseStation
@@ -99,6 +100,65 @@ class Agent(object):
             pickle.dump(rewards, open(performance_file, 'w+'))
         return rewards
 
+    def comparison_(self, algorithm=(lambda x: x), circles=300, dump=True):
+        """
+        Reference algorithm iterator.
+        """
+        func = np.vectorize(algorithm)
+        crf = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+        last = np.zeros((self.variables.bs_number, self.variables.file_number))
+        zero = np.zeros((self.variables.bs_number, self.variables.file_number))
+        one = np.ones((self.variables.bs_number, self.variables.file_number))
+        tail = dict()
+        while self.t < circles:
+            crf[self.t] = func(zero) + func(self.t * one - last) * crf[self.t - 1] * self.c_bkt[self.t - 1]
+            last += self.c_bkt[self.t - 1] * one
+            file_info = self.variables.file_info
+            for bs in xrange(self.variables.bs_number):
+                row_crf = list(crf[self.t][bs, :])
+                files = sorted(range(self.variables.file_number), reverse=True)
+                heap = [{'crf': value, 'key': files[_]} for _, value in enumerate(row_crf)]
+                if self.t == 0:
+                    if algorithm.func_name == 'lfu':
+                        heapq.heapify(heap)
+                    else:
+                        heap = heapq.nsmallest(len(heap), heap, key=lambda x: x['crf'])
+                        heap = heap[0::2] + heap[1::2]
+                else:
+                    heapq.heapify(heap)
+                sizes = 0
+                for _, d in enumerate(heap):
+                    f = d['key']
+                    if sizes + file_info[f] < self.variables.bs_memory:
+                        if tail.get(bs) is not None and tail.get(bs) == f:
+                            continue
+                        sizes += file_info[f]
+                        self.c_bkt[self.t][bs, f] = 1
+                    else:
+                        tail[bs] = f
+                        break
+            self._observe_demands()
+            self._calculate_rewards()
+            self.t += 1
+        if dump:
+            performance_file = \
+                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format('lfu',
+                                                                  self.variables.bs_number,
+                                                                  self.variables.file_number,
+                                                                  self.variables.bs_memory,
+                                                                  self.variables.user_size)
+            pickle.dump(self.rewards, open(performance_file, 'w+'))
+        return self.rewards
+
+    # def lru_(self, circles=300, dump=True):
+    #     """
+    #     Reference algorithm iterator.
+    #     """
+    #     lru = np.vectorize(lambda x: (1./2)**x)
+    #     crf = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+    #     while self.t < circles:
+    #         self.c_bkt[self.t] =
+
     def _generate_demands(self, bs_identity):
         """
         Generate demands based on bs identity and time slot.
@@ -111,7 +171,7 @@ class Agent(object):
         return zipf_array(a=self.variables.zipf_a, low_bound=0,
                           up_bound=len(self.variables.files),
                           size=self.variables.users[bs_identity],
-                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size)
+                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+100000)
 
     def _observe_demands(self):
         """
