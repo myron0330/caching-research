@@ -11,7 +11,7 @@ from . basic.tools import calculate_rewards
 from . variables import Variables
 from . utils.random_utils import zipf_array
 from . utils.dict_utils import DefaultDict
-from . algorithms import branch_and_bound, primal_dual_recover
+from . algorithms import branch_and_bound, primal_dual_recover, recover_from_
 
 
 class Agent(object):
@@ -42,7 +42,7 @@ class Agent(object):
         variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
 
-    def iter_with_(self, algorithm, circles=300, dump=True):
+    def iter_with_(self, algorithm, circles=300, dump=True, prefix=''):
         """
         algorithm iteration
 
@@ -50,6 +50,7 @@ class Agent(object):
             algorithm(function): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
+            prefix(string): prefix
         """
         while self.t < circles:
             self._caching_files(algorithm)
@@ -59,15 +60,18 @@ class Agent(object):
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(algorithm.func_name,
-                                                                  self.variables.bs_number,
-                                                                  self.variables.file_number,
-                                                                  self.variables.bs_memory,
-                                                                  self.variables.user_size)
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                        algorithm.func_name,
+                                                                        self.variables.bs_number,
+                                                                        self.variables.file_number,
+                                                                        self.variables.bs_memory,
+                                                                        self.variables.user_size,
+                                                                        self.variables.zipf_a)
             pickle.dump(self.rewards, open(performance_file, 'w+'))
         return self.rewards
 
-    def find_optimal_with_bnd_(self, comparison_algorithm, circles=300, dump=True):
+    def find_optimal_with_bnd_(self, comparison_algorithm, circles=300, dump=True, fixed_theta=False,
+                               prefix=''):
         """
         algorithm iteration
 
@@ -75,11 +79,17 @@ class Agent(object):
             comparison_algorithm(function): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
+            fixed_theta(boolean): whether to user fixed theta
+            prefix(string): prefix
         """
-        theta_est = dict()
+        theta_est_bkt = dict()
+        zipf_func = \
+            (lambda x, n: x ** (-self.variables.zipf_a) / sum([(_ + 1) ** (-self.variables.zipf_a) for _ in xrange(n)]))
+        theta_est_bk = np.array([[zipf_func(_ + 1, self.variables.file_number)
+                                  for _ in xrange(self.variables.file_number)]] * self.variables.bs_number)
         while self.t < circles:
             self._caching_files(comparison_algorithm)
-            theta_est[self.t] = self.theta_est_bk
+            theta_est_bkt[self.t] = self.theta_est_bk if not fixed_theta else theta_est_bk
             self._observe_demands()
             self._mab_update()
             self._calculate_rewards()
@@ -87,20 +97,61 @@ class Agent(object):
         self.t = 0
         rewards = list()
         while self.t < circles:
-            c_bkt = branch_and_bound(self.variables, theta_est[self.t], self.d_bkt[self.t])
+            c_bkt = branch_and_bound(self.variables, theta_est_bkt[self.t], self.d_bkt[self.t])
+            rewards.append(calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t]))
+            self.t += 1
+        if dump:
+            style = 'fixed' if fixed_theta else 'dynamic'
+            performance_file = \
+                '../performance/{}.rewards.{}.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                           branch_and_bound.func_name,
+                                                                           style,
+                                                                           self.variables.bs_number,
+                                                                           self.variables.file_number,
+                                                                           self.variables.bs_memory,
+                                                                           self.variables.user_size,
+                                                                           self.variables.zipf_a)
+            pickle.dump(rewards, open(performance_file, 'w+'))
+        return rewards
+
+    def iter_with_greedy_(self, comparison_algorithm, circles=300, dump=True, prefix=''):
+        """
+        algorithm iteration
+
+        Args:
+            comparison_algorithm(function): algorithm
+            circles(int): max iteration circles
+            dump(boolean): whether to dump results
+            prefix(string): prefix
+        """
+        theta_est_bkt = dict()
+        while self.t < circles:
+            self._caching_files(comparison_algorithm)
+            theta_est_bkt[self.t] = self.theta_est_bk
+            self._observe_demands()
+            self._mab_update()
+            self._calculate_rewards()
+            self.t += 1
+
+        self.t = 0
+        rewards = list()
+        while self.t < circles:
+            c_bkt = recover_from_(self.variables, theta_est_bkt[self.t])
             rewards.append(calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t]))
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format(branch_and_bound.func_name,
-                                                                  self.variables.bs_number,
-                                                                  self.variables.file_number,
-                                                                  self.variables.bs_memory,
-                                                                  self.variables.user_size)
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                        branch_and_bound.func_name,
+                                                                        self.variables.bs_number,
+                                                                        self.variables.file_number,
+                                                                        self.variables.bs_memory,
+                                                                        self.variables.user_size,
+                                                                        self.variables.zipf_a)
             pickle.dump(rewards, open(performance_file, 'w+'))
         return rewards
 
-    def comparison_(self, algorithm=(lambda x: x), circles=300, dump=True):
+    def comparison_(self, algorithm=(lambda x: x), circles=300, dump=True, prefix=''):
         """
         Reference algorithm iterator.
         """
@@ -111,6 +162,7 @@ class Agent(object):
         one = np.ones((self.variables.bs_number, self.variables.file_number))
         tail = dict()
         while self.t < circles:
+            print 'Iteration: {}'.format(self.t)
             crf[self.t] = func(zero) + func(self.t * one - last) * crf[self.t - 1] * self.c_bkt[self.t - 1]
             last += self.c_bkt[self.t - 1] * one
             file_info = self.variables.file_info
@@ -142,11 +194,13 @@ class Agent(object):
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/rewards.{}.{}-{}-{}-{}.pk'.format('lfu',
-                                                                  self.variables.bs_number,
-                                                                  self.variables.file_number,
-                                                                  self.variables.bs_memory,
-                                                                  self.variables.user_size)
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                        algorithm.func_name,
+                                                                        self.variables.bs_number,
+                                                                        self.variables.file_number,
+                                                                        self.variables.bs_memory,
+                                                                        self.variables.user_size,
+                                                                        self.variables.zipf_a)
             pickle.dump(self.rewards, open(performance_file, 'w+'))
         return self.rewards
 

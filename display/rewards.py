@@ -6,9 +6,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+from matplotlib import font_manager
 
 
 AVAILABLE_MARKERS = ['o', '*', 'p', 's', '^', '<', '>']
+font_properties = font_manager.FontProperties()
 
 
 def _standardize_(array, sigma=1.5):
@@ -72,7 +74,9 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
 def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
                       title_size=18, label_size=16, marker=None, marker_size=10, legend_size=10,
                       with_standardize=False, standardize_init=0, sigma=1.5,
-                      title=u'回报对比图', x_label=u'迭代次数', y_label=u'回报收益', **kwargs):
+                      title='', x_label=u'迭代次数', y_label=u'回报收益',
+                      save_path=None, x_axis=None, loc=None,
+                      texts=None, **kwargs):
     """
     Display multiple simulation rewards
 
@@ -90,8 +94,11 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         marker_size(float): marker size
         legend_size(float): legend_size
         title(string): figure title
+        save_path(string): save path
         x_label(string): x label string
         y_label(string): y label string
+        x_axis(list): x_axis
+        loc(int): legend location
     """
     fig = plt.figure(figsize=fig_size)
     ax = fig.add_subplot(1, 1, 1)
@@ -101,31 +108,55 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     ax.spines['bottom'].set_color('black')
     max_y, min_y = 0, 1e10
     for _, reward in enumerate(rewards_data.values()):
-        frame = pd.DataFrame(reward)
-        frame['total'] = frame.sum(axis=1)
-        max_y = max(max_y, frame['total'][:display_length].max())
-        min_y = min(min_y, frame['total'][:display_length].min())
+        if isinstance(reward[0], dict):
+            frame = pd.DataFrame(reward)
+            frame['total'] = frame.sum(axis=1)
+            max_y = max(max_y, frame['total'][:display_length].max())
+            min_y = min(min_y, frame['total'][:display_length].min())
+            curve = list(frame['total'][:display_length])
+        else:
+            max_y = max([max_y] + reward)
+            min_y = min([min_y] + reward)
+            curve = reward
         current_marker = marker
         if marker == '':
             current_marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
-        curve = list(frame['total'][:display_length])
         if with_standardize:
             curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
-        plt.plot(curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
-                 marker=current_marker, markersize=marker_size, markerfacecolor='None',
-                 markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
+        if x_axis is not None:
+            plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+                     marker=current_marker, markersize=marker_size, markerfacecolor='None',
+                     markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
+        else:
+            plt.plot(curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+                     marker=current_marker, markersize=marker_size, markerfacecolor='None',
+                     markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
-              horizontalalignment='center', color='k')
-    plt.xlabel(x_label, fontsize=label_size, verticalalignment='top', horizontalalignment='center')
+              horizontalalignment='center', color='k', fontproperties=font_properties)
+    font_properties.set_size(label_size)
+    plt.xlabel(x_label, fontsize=label_size, verticalalignment='top',
+               horizontalalignment='center', fontproperties=font_properties)
     plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
-               horizontalalignment='center', rotation=90)
-    legend = map(lambda x: x.upper(), rewards_data.keys())
+               horizontalalignment='center', rotation=90,  fontproperties=font_properties)
+    # legend = map(lambda x: x.upper(), rewards_data.keys())
+    legend = rewards_data.keys()
     diff_y = max_y - min_y
     y_min_lim = kwargs.get('y_min_lim', min_y - diff_y * 0.05)
     y_max_lim = kwargs.get('y_max_lim', max_y + diff_y * 0.05)
     plt.ylim(y_min_lim, y_max_lim)
-    plt.legend(legend, loc='best', fontsize=legend_size)
+    if x_axis:
+        plt.xlim(x_axis[0], x_axis[-1])
+    if loc is not None:
+        plt.legend(legend, loc=loc, fontsize=legend_size)
+    else:
+        plt.legend(legend, loc='best', fontsize=legend_size)
+    if texts is not None:
+        for text in texts:
+            plt.text(*text['args'], **text['kwargs'])
+    if save_path is not None:
+        plt.savefig(save_path)
     plt.show()
+
 
 DEFAULT_COLORS = {
     0: '#363636',
