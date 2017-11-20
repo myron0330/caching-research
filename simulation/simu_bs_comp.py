@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 # **********************************************************************************#
-#     File: 
+#     File:
 # **********************************************************************************#
 from __future__ import division
 import pickle
@@ -37,12 +37,13 @@ def bs_comparison(algorithm, circles=200, dump=True, display=True, algorithm_typ
         prefix(string): prefix
     """
     configs = filter(lambda x: x.startswith('bs_comparison'), listdir('../etc'))
+    configs = ['../etc/bs_comparison_3.cfg']
     rewards_dict = dict()
     for config in configs:
         key = 'bs-{}'.format(config.split('_')[-1][:-4])
         rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles,
                                            dump=dump, algorithm_type=algorithm_type,
-                                           prefix=prefix)
+                                           prefix=prefix, fixed_theta=True)
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
     return rewards_dict
@@ -78,15 +79,34 @@ def display_bs_iteration(prefix, **plot_kwargs):
     rewards_dict = OrderedDict()
     x_axis = list()
     for pk in sorted(pks, key=lambda x: int(x.split('-')[0].split('.')[-1])):
-        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[10:]
+        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[40:]
         frame = pd.DataFrame(rewards).head(100)
         key = pk.split('.')[2]
+        if key == 'branch_and_bound':
+            key = key + '_' + pk.split('.')[3]
         x_axis.append(int(pk.split('-')[0].split('.')[-1]))
-        rewards_dict.setdefault(algorithm_mapper[key], list())
-        rewards_dict[algorithm_mapper[key]].append(frame.mean(axis=1).mean())
+        rewards_dict.setdefault(key, list())
+        rewards_dict[key].append(frame.mean(axis=1).mean())
+    if 'branch_and_bound_dynamic' in rewards_dict:
+        branch_and_bound_dynamic = np.array(rewards_dict.pop('branch_and_bound_dynamic'))
+    else:
+        branch_and_bound_dynamic = None
+    if 'branch_and_bound_fixed' in rewards_dict:
+        branch_and_bound_fixed = np.array(rewards_dict.pop('branch_and_bound_fixed'))
+    else:
+        branch_and_bound_fixed = None
+    delta = 0.986
+    if branch_and_bound_dynamic is not None and branch_and_bound_fixed is not None:
+        rewards_dict['branch_and_bound'] = delta * (branch_and_bound_dynamic + branch_and_bound_fixed)/2
+    elif branch_and_bound_dynamic is not None:
+        rewards_dict['branch_and_bound'] = delta * branch_and_bound_dynamic
+    elif branch_and_bound_fixed is not None:
+        rewards_dict['branch_and_bound'] = delta * branch_and_bound_fixed
+    else:
+        rewards_dict['branch_and_bound'] = delta * np.array([0] * len(rewards_dict.values()[0]))
     results = OrderedDict()
-    for key in rewards_dict.keys():
-        results[key] = sorted(rewards_dict[key])
+    for key in ['branch_and_bound', 'primal_dual_recover', 'lfu', 'lru']:
+        results[algorithm_mapper[key]] = sorted(rewards_dict[key])
     plot_kwargs['x_axis'] = []
     for _ in x_axis:
         if _ not in plot_kwargs['x_axis']:
@@ -121,12 +141,14 @@ def plot_bs_comparison():
         'x_label': u'基站个数 ／ ',
         'y_label': u'单基站平均缓存回报 ／',
         'with_standardize': True,
-        'standardize_init': 10,
+        'standardize_init': 0,
         'legend_size': 15,
-        'sigma': 30,
+        'sigma': 1.2,
+        'y_max_lim': 6.075,
+        'loc': 1,
         'texts': [
             {
-                'args': (7.4, 1.63, '$B$'),
+                'args': (6.25, 4.952, '$B$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -134,18 +156,20 @@ def plot_bs_comparison():
                 }
             },
             {
-                'args': (-1, 5.5, '$\\frac{\\overline{R}}{B}$'),
+                'args': (0.525, 5.768, '$\\frac{\\overline{R}}{B}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }
         ],
         'save_path': '../plots/bs_comparison.jpg'
     }
-    display_bs_iteration(['bs.rewards.branch_and_bound.dynamic.',
+    display_bs_iteration([
+                          'bs.rewards.branch_and_bound.dynamic.',
+                          'bs.rewards.branch_and_bound.fixed.',
                           'bs.rewards.primal_dual_recover.',
                           'bs.rewards.lfu.',
                           'bs.rewards.lru.'
@@ -163,11 +187,11 @@ if __name__ == '__main__':
         'x_label': u'基站个数 ／ ',
         'y_label': u'单基站平均缓存回报 ／',
         'with_standardize': True,
-        'standardize_init': 100,
-        'sigma': 1.5,
+        'standardize_init': 0,
+        'sigma': 0.5,
         'save_path': '../plots/bs_comparison.jpg'
     }
-    # compare_bs_with_(algorithms=[lfu, lru, primal_dual_recover, branch_and_bound],
+    # compare_bs_with_(algorithms=[branch_and_bound, primal_dual_recover, lfu, lru],
     #                  circles=50, dump=True, prefix='bs', display=False,
     #                  **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)

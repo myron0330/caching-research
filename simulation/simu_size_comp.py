@@ -42,7 +42,7 @@ def size_comparison(algorithm, circles=200, dump=True, display=True, algorithm_t
         key = 'Size-{}'.format(config.split('_')[-1]).split('.')[0]
         rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles,
                                            dump=dump, algorithm_type=algorithm_type,
-                                           prefix=prefix)
+                                           prefix=prefix, fixed_theta=True)
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
     return rewards_dict
@@ -77,8 +77,8 @@ def display_sizes_iteration(prefix, **plot_kwargs):
                       key=lambda x: int(x.split('-')[2]), reverse=False)
     rewards_dict = OrderedDict()
     x_axis = list()
-    for pk in pks:
-        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[100:]
+    for pk in sorted(pks, key=lambda x: int(x.split('-')[1])):
+        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[150:]
         frame = pd.DataFrame(rewards).head(100)
         key = pk.split('.')[2]
         x_axis.append(int(pk.split('-')[1]))
@@ -86,7 +86,8 @@ def display_sizes_iteration(prefix, **plot_kwargs):
         rewards_dict[algorithm_mapper[key]].append(frame.sum(axis=1).mean())
     results = OrderedDict()
     for key in rewards_dict.keys():
-        results[key] = sorted(rewards_dict[key])
+        results[key] = sorted(rewards_dict[key], reverse=True)
+    # results = rewards_dict
     plot_kwargs['x_axis'] = []
     for _ in x_axis:
         if _ not in plot_kwargs['x_axis']:
@@ -121,13 +122,14 @@ def plot_sizes_comparison():
         'x_label': u'文件数量 ／ ',
         'y_label': u'平均缓存回报 ／',
         'with_standardize': True,
-        'standardize_init': 10,
-        'sigma': 1.5,
+        'standardize_init': 2,
+        'sigma': 0.75,
         'legend_size': 15,
+        'y_min_lim': 14,
         'loc': 4,
         'texts': [
             {
-                'args': (62.2, 19.25, '$K$'),
+                'args': (62.2, 13.35, '$K$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -135,7 +137,7 @@ def plot_sizes_comparison():
                 }
             },
             {
-                'args': (4.75, 22.18, '$\\overline{R}$'),
+                'args': (6, 21.18, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -146,7 +148,7 @@ def plot_sizes_comparison():
         ],
         'save_path': '../plots/sizes_comparison.jpg'
     }
-    display_sizes_iteration(['sizes.rewards.branch_and_bound.dynamic.4-',
+    display_sizes_iteration(['sizes.rewards.branch_and_bound.fixed.4-',
                              'sizes.rewards.primal_dual_recover.4-',
                              'sizes.rewards.lfu.4-',
                              'sizes.rewards.lru.4-'
@@ -168,7 +170,7 @@ if __name__ == '__main__':
         'sigma': 1.5,
         'save_path': '../plots/sizes_comparison.jpg'
     }
-    # compare_sizes_with_(algorithms=[branch_and_bound, primal_dual_recover, lfu, lru],
+    # compare_sizes_with_(algorithms=[lru],
     #                     circles=200, dump=True, prefix='sizes', display=False,
     #                     **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)
