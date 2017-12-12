@@ -172,7 +172,7 @@ class Agent(object):
         while self.t < circles:
             print 'Iteration: {}'.format(self.t)
             crf[self.t] = func(zero) + func(self.t * one - last) * crf[self.t - 1] * self.c_bkt[self.t - 1]
-            last += self.c_bkt[self.t - 1] * one
+            last += self.c_bkt[self.t - 1] * one * np.sign(self.d_bkt[self.t - 1])
             file_info = self.variables.file_info
             for bs in xrange(self.variables.bs_number):
                 row_crf = list(crf[self.t][bs, :])
