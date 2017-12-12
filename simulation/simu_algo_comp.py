@@ -215,8 +215,8 @@ if __name__ == '__main__':
         'y_label': u'回报 / R',
         'all_curves': True,
         'with_standardize': False,
-        'standardize_init': 6,
-        'sigma': 3,
+        'standardize_init': 20,
+        'sigma': 5,
         'loc': 4,
         'legend_size': 12,
         'fixed_theta': True,
@@ -224,9 +224,11 @@ if __name__ == '__main__':
         'save_path': '../plots/regrets_comparison.jpg',
         # 'save_path': '../plots/algorithms_comparison.jpg',
     }
-    t_algorithms = [primal_dual_recover]
-    t_comparison_algorithm = primal_dual_recover
-    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
-                         circles=2000, dump=True, **plot_parameters)
+    # t_algorithms = [primal_dual_recover]
+    # t_comparison_algorithm = primal_dual_recover
+    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
+    #                      circles=100, dump=False, **plot_parameters)
+    algorithm_comparison([], comparison_algorithm=None, prefix='algorithm',
+                         circles=100, dump=False, **plot_parameters)
     # plot_algorithms_comparison()
     # plot_regrets_comparison()
