@@ -172,17 +172,21 @@ class Agent(object):
         while self.t < circles:
             print 'Iteration: {}'.format(self.t)
             crf[self.t] = func(zero) + func(self.t * one - last) * crf[self.t - 1] * self.c_bkt[self.t - 1]
-            last += self.c_bkt[self.t - 1] * one
+            last += self.c_bkt[self.t - 1] * one * np.sign(self.d_bkt[self.t - 1])
             file_info = self.variables.file_info
             for bs in xrange(self.variables.bs_number):
                 row_crf = list(crf[self.t][bs, :])
-                files = sorted(range(self.variables.file_number), reverse=True)
-                heap = [{'crf': value, 'key': files[_]} for _, value in enumerate(row_crf)]
-                if algorithm.func_name == 'lfu':
-                    heap = heap[::-1][0::2] + heap[::-1][1::2]
+                if self.t == 0:
+                    files = sorted(range(self.variables.file_number), reverse=True)
+                    heap = [{'crf': value, 'key': files[_]} for _, value in enumerate(row_crf)]
+                    if algorithm.func_name == 'lfu':
+                        heap = heap[::-1][0::2] + heap[::-1][1::2]
+                    else:
+                        heap = heap[::-1][1:] + heap[::-1][:1]
                 else:
-                    heap = heap[::-1][1:] + heap[::-1][:1]
-                    # heap = heap[::-1][:1] + heap[:-1]
+                    for item in heap:
+                        item['crf'] = float(row_crf[item['key']])
+                    heap = heapq.nlargest(len(heap), heap, key=lambda x: x['crf'])
                 sizes = 0
                 for _, d in enumerate(heap):
                     f = d['key']
