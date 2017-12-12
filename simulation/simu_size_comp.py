@@ -122,10 +122,10 @@ def plot_sizes_comparison():
         'x_label': u'文件数量 ／ ',
         'y_label': u'平均缓存回报 ／',
         'with_standardize': True,
-        'standardize_init': 2,
-        'sigma': 0.75,
+        'standardize_init': 3,
+        'sigma': 1,
         'legend_size': 15,
-        'y_min_lim': 14,
+        'y_min_lim': 280,
         'loc': 4,
         'texts': [
             {
@@ -148,10 +148,10 @@ def plot_sizes_comparison():
         ],
         'save_path': '../plots/sizes_comparison.jpg'
     }
-    display_sizes_iteration(['sizes.rewards.branch_and_bound.fixed.4-',
-                             'sizes.rewards.primal_dual_recover.4-',
-                             'sizes.rewards.lfu.4-',
-                             'sizes.rewards.lru.4-'
+    display_sizes_iteration(['sizes.rewards.branch_and_bound.fixed.5-',
+                             'sizes.rewards.primal_dual_recover.5-',
+                             'sizes.rewards.lfu.5-',
+                             'sizes.rewards.lru.5-'
                              ], **parameters)
 
 
@@ -170,9 +170,9 @@ if __name__ == '__main__':
         'sigma': 1.5,
         'save_path': '../plots/sizes_comparison.jpg'
     }
-    # compare_sizes_with_(algorithms=[lru],
-    #                     circles=200, dump=True, prefix='sizes', display=False,
-    #                     **plot_parameters)
+    compare_sizes_with_(algorithms=[lru, lfu, primal_dual_recover, branch_and_bound],
+                        circles=200, dump=True, prefix='sizes', display=False,
+                        **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)
     # display_memory_iteration(['rewards.branch_and_bound.dynamic.4-20-',
     #                           'rewards.primal_dual_recover.4-20-',
@@ -183,4 +183,4 @@ if __name__ == '__main__':
     # compare_memories_with_(algorithms, circles=100, dump=True, display=False)
     # plot_memory_comparison()
     # display_sizes_iteration(prefix='sizes.', **plot_parameters)
-    plot_sizes_comparison()
+    # plot_sizes_comparison()

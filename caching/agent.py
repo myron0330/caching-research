@@ -98,7 +98,11 @@ class Agent(object):
         rewards = list()
         while self.t < circles:
             c_bkt = branch_and_bound(self.variables, theta_est_bkt[self.t], self.d_bkt[self.t])
-            rewards.append(calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t]))
+            reward = calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t])
+            if sum(self.rewards[self.t].values()) > sum(reward.values()):
+                rewards.append(self.rewards[self.t])
+            else:
+                rewards.append(reward)
             self.t += 1
         if dump:
             style = 'fixed' if fixed_theta else 'dynamic'
@@ -137,7 +141,11 @@ class Agent(object):
         rewards = list()
         while self.t < circles:
             c_bkt = recover_from_(self.variables, theta_est_bkt[self.t])
-            rewards.append(calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t]))
+            reward = calculate_rewards(self.variables, c_bkt, self.d_bkt[self.t])
+            if sum(self.rewards[self.t].values()) > sum(reward.values()):
+                rewards.append(self.rewards[self.t])
+            else:
+                rewards.append(reward)
             self.t += 1
         if dump:
             performance_file = \
@@ -170,14 +178,11 @@ class Agent(object):
                 row_crf = list(crf[self.t][bs, :])
                 files = sorted(range(self.variables.file_number), reverse=True)
                 heap = [{'crf': value, 'key': files[_]} for _, value in enumerate(row_crf)]
-                if self.t == 0:
-                    if algorithm.func_name == 'lfu':
-                        heapq.heapify(heap)
-                    else:
-                        heap = heapq.nsmallest(len(heap), heap, key=lambda x: x['crf'])
-                        heap = heap[0::2] + heap[1::2]
+                if algorithm.func_name == 'lfu':
+                    heap = heap[::-1][0::2] + heap[::-1][1::2]
                 else:
-                    heapq.heapify(heap)
+                    heap = heap[::-1][1:] + heap[::-1][:1]
+                    # heap = heap[::-1][:1] + heap[:-1]
                 sizes = 0
                 for _, d in enumerate(heap):
                     f = d['key']
@@ -225,7 +230,7 @@ class Agent(object):
         return zipf_array(a=self.variables.zipf_a, low_bound=0,
                           up_bound=len(self.variables.files),
                           size=self.variables.users[bs_identity],
-                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+100000)
+                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+5000000)
 
     def _observe_demands(self):
         """
@@ -265,8 +270,8 @@ class Agent(object):
             self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
             self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t])
 
-    def _calculate_rewards(self):
+    def _calculate_rewards(self, alpha=1.):
         """
         Calculate rewards of users
         """
-        self.rewards.append(calculate_rewards(self.variables, self.c_bkt[self.t], self.d_bkt[self.t]))
+        self.rewards.append(calculate_rewards(self.variables, self.c_bkt[self.t], self.d_bkt[self.t], alpha=alpha))

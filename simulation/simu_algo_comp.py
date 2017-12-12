@@ -21,7 +21,7 @@ algorithm_mapper = {
 
 def algorithm_comparison(algorithms, comparison_algorithm=None,
                          circles=200, dump=True, fixed_theta=False,
-                         display=True, **plot_kwargs):
+                         display=True, prefix='', **plot_kwargs):
     """
     Algorithm comparison
 
@@ -32,21 +32,22 @@ def algorithm_comparison(algorithms, comparison_algorithm=None,
         fixed_theta(boolean): fixed theta
         dump(boolean): whether to dump result to file
         display(boolean): whether to display
+        prefix(string): prefix
     """
     config = '../etc/algorithm_comparison.cfg'
     rewards_dict = OrderedDict()
     if comparison_algorithm:
         rewards_dict[branch_and_bound.func_name] = simulate_with_(comparison_algorithm, config=config, circles=circles,
-                                                                  dump=dump, algorithm_type='optimal',
+                                                                  dump=dump, algorithm_type='optimal', prefix=prefix,
                                                                   fixed_theta=fixed_theta)
         # rewards_dict['greedy'] = simulate_with_(comparison_algorithm, config=config, circles=circles,
         #                                         dump=dump, algorithm_type='greedy')
     for algorithm in algorithms:
-        rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config, circles=circles,
+        rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config, circles=circles, prefix=prefix,
                                                            dump=dump)
-    rewards_dict[lfu.func_name] = simulate_with_(lfu, config=config, circles=circles, dump=dump,
+    rewards_dict[lfu.func_name] = simulate_with_(lfu, config=config, circles=circles, dump=dump, prefix=prefix,
                                                  algorithm_type='comparison')
-    rewards_dict[lru.func_name] = simulate_with_(lru, config=config, circles=circles, dump=dump,
+    rewards_dict[lru.func_name] = simulate_with_(lru, config=config, circles=circles, dump=dump, prefix=prefix,
                                                  algorithm_type='comparison')
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
@@ -63,7 +64,7 @@ def display_algorithm_comparison_by_(file_names, **plot_kwargs):
     rewards_dict = OrderedDict()
     for file_name in file_names:
         rewards = pickle.load(open('../performance/{}'.format(file_name), 'r+'))
-        key = file_name.split('.')[1]
+        key = file_name.split('.')[2]
         rewards_dict[algorithm_mapper[key]] = rewards
     display_multiple_(rewards_dict, **plot_kwargs)
 
@@ -148,16 +149,16 @@ def plot_algorithms_comparison():
         ],
         'save_path': '../plots/algorithms_comparison.jpg',
     }
-    display_algorithm_comparison_by_(['rewards.branch_and_bound.dynamic.4-6-15-300.pk',
-                                      'rewards.primal_dual_recover.4-6-15-300.pk',
-                                      'rewards.lfu.4-6-15-300.pk',
-                                      'rewards.lru.4-6-15-300.pk'], **parameters)
+    display_algorithm_comparison_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-2.0.pk',
+                                      'algorithm.rewards.primal_dual_recover.5-20-100-20-2.0.pk',
+                                      'algorithm.rewards.lfu.5-20-100-20-2.0.pk',
+                                      'algorithm.rewards.lru.5-20-100-20-2.0.pk'], **parameters)
     return None
 
 
 def plot_regrets_comparison():
     parameters = {
-        'display_length': 50,
+        'display_length': 100,
         'line_width': 2,
         'title_size': 20,
         'label_size': 16,
@@ -195,39 +196,37 @@ def plot_regrets_comparison():
         ],
         'save_path': '../plots/regrets_comparison.jpg',
     }
-    display_regret_by_(['rewards.branch_and_bound.fixed.4-6-15-300.pk',
-                        'rewards.primal_dual_recover.4-6-15-300.pk',
-                        'rewards.lfu.4-6-15-300.pk',
-                        'rewards.lru.4-6-15-300.pk'], **parameters)
+    display_regret_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-2.0.pk',
+                        'algorithm.rewards.primal_dual_recover.5-20-100-20-2.0.pk',
+                        'algorithm.rewards.lfu.5-20-100-20-2.0.pk',
+                        'algorithm.rewards.lru.5-20-100-20-2.0.pk'], **parameters)
 
 
 if __name__ == '__main__':
-    # plot_parameters = {
-    #     'display_length': 50,
-    #     'line_width': 2,
-    #     'title_size': 20,
-    #     'label_size': 16,
-    #     'marker': '',
-    #     'marker_size': 8,
-    #     'title': '',
-    #     'x_label': u'迭代次数 / t',
-    #     'y_label': u'回报 / R',
-    #     'all_curves': True,
-    #     'with_standardize': False,
-    #     'standardize_init': 6,
-    #     'sigma': 3,
-    #     'loc': 4,
-    #     'legend_size': 12,
-    #     'fixed_theta': True,
-    #     'y_min_lim': 0,
-    #     'save_path': '../plots/regrets_comparison.jpg',
-    #     # 'save_path': '../plots/algorithms_comparison.jpg',
-    # }
-    # t_algorithms = [primal_dual_recover]
-    # t_comparison_algorithm = primal_dual_recover
-    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm,
-    #                      circles=2000, dump=True, **plot_parameters)
-
-    # display_single_algorithm_by_('rewards.branch_and_bound.4-6-15-300.pk', **plot_parameters)
-    plot_algorithms_comparison()
+    plot_parameters = {
+        'display_length': 50,
+        'line_width': 2,
+        'title_size': 20,
+        'label_size': 16,
+        'marker': '',
+        'marker_size': 8,
+        'title': '',
+        'x_label': u'迭代次数 / t',
+        'y_label': u'回报 / R',
+        'all_curves': True,
+        'with_standardize': False,
+        'standardize_init': 6,
+        'sigma': 3,
+        'loc': 4,
+        'legend_size': 12,
+        'fixed_theta': True,
+        'y_min_lim': 0,
+        'save_path': '../plots/regrets_comparison.jpg',
+        # 'save_path': '../plots/algorithms_comparison.jpg',
+    }
+    t_algorithms = [primal_dual_recover]
+    t_comparison_algorithm = primal_dual_recover
+    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
+                         circles=2000, dump=True, **plot_parameters)
+    # plot_algorithms_comparison()
     # plot_regrets_comparison()

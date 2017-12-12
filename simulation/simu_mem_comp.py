@@ -23,7 +23,8 @@ algorithm_mapper = {
 }
 
 
-def memory_comparison(algorithm, circles=200, dump=True, display=True, algorithm_type='original', **plot_kwargs):
+def memory_comparison(algorithm, circles=200, dump=True, display=True, algorithm_type='original',
+                      prefix='', **plot_kwargs):
     """
     Algorithm comparison
 
@@ -33,13 +34,14 @@ def memory_comparison(algorithm, circles=200, dump=True, display=True, algorithm
         dump(boolean): whether to dump result to file
         display(boolean): whether to display
         algorithm_type(string): algorithm type
+        prefix(string): prefix
     """
     configs = filter(lambda x: x.startswith('memory_comparison'), listdir('../etc'))
-    configs = ['memory_comparison_15.cfg']
+    configs = ['memory_comparison_25.cfg']
     rewards_dict = dict()
     for config in configs:
         key = 'Memory-{}'.format(config.split('_')[-1]).split('.')[0]
-        rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles,
+        rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles, prefix=prefix, fixed_theta=True,
                                            dump=dump, algorithm_type=algorithm_type)
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
@@ -67,7 +69,7 @@ def display_memory_iteration(prefix, **plot_kwargs):
     """
     Display memory comparison
     """
-    variables = Variables.from_('../etc/memory_comparison_25.cfg')
+    variables = Variables.from_('../etc/memory_comparison_50.cfg')
     total_sizes = sum(variables.sizes)
     pks = []
     if isinstance(prefix, (str, unicode)):
@@ -81,7 +83,7 @@ def display_memory_iteration(prefix, **plot_kwargs):
     for pk in pks:
         rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[file_number:]
         frame = pd.DataFrame(rewards).head(100)
-        key = pk.split('.')[1]
+        key = pk.split('.')[2]
         rewards_dict.setdefault(algorithm_mapper[key], list())
         rewards_dict[algorithm_mapper[key]].append(frame.sum(axis=1).mean())
     for key, value in rewards_dict.iteritems():
@@ -117,8 +119,8 @@ def plot_memory_comparison():
         'x_label': u'存储容量比 / ',
         'y_label': u'平均缓存回报 / ',
         'with_standardize': True,
-        'standardize_init': 10,
-        'sigma': 1.5,
+        'standardize_init': 0,
+        'sigma': 3,
         'legend_size': 15,
         'texts': [
             {
@@ -142,10 +144,10 @@ def plot_memory_comparison():
         'save_path': '../plots/memory_comparison.jpg'
 
     }
-    display_memory_iteration(['rewards.branch_and_bound.dynamic.4-20-',
-                              'rewards.primal_dual_recover.4-20-',
-                              'rewards.lfu.4-20-',
-                              'rewards.lru.4-20-',
+    display_memory_iteration(['memory.rewards.branch_and_bound.dynamic.5-20-',
+                              'memory.rewards.primal_dual_recover.5-20-',
+                              'memory.rewards.lfu.5-20-',
+                              'memory.rewards.lru.5-20-',
                               ], **parameters)
 
 
@@ -173,6 +175,7 @@ if __name__ == '__main__':
     #                           'rewards.lfu.4-20-',
     #                           'rewards.lru.4-20-',
     #                           ], **plot_parameters)
-    # algorithms = [primal_dual_recover, branch_and_bound, lfu, lru]
-    # compare_memories_with_(algorithms, circles=100, dump=True, display=False)
-    plot_memory_comparison()
+    # algorithms = [primal_dual_recover, branch_and_bound, lfu]
+    algorithms = [branch_and_bound]
+    compare_memories_with_(algorithms, circles=100, dump=True, prefix='memory', display=False)
+    # plot_memory_comparison()

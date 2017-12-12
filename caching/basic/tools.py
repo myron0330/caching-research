@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 
 
-def calculate_rewards(variables, c_bkt, d_bkt, aggregate=False):
+def calculate_rewards(variables, c_bkt, d_bkt, aggregate=False, alpha=1.):
     """
     Calculate rewards
 
@@ -11,6 +11,7 @@ def calculate_rewards(variables, c_bkt, d_bkt, aggregate=False):
         c_bkt(matrix): c_bkt
         d_bkt(matrix): d_bkt
         aggregate(boolean): whether to aggregate the rewards
+        alpha(float): alpha
     """
     delta = max(variables.sizes) * (1 / variables.v_bd + 1 / variables.v_cb)
     c_kt = np.sign(c_bkt.sum(axis=0))
@@ -26,7 +27,7 @@ def calculate_rewards(variables, c_bkt, d_bkt, aggregate=False):
         for f in variables.files:
             latency = file_info[f] * (1. / v_bd + (1. - c_bt[f]) * (1. * c_kt[f] / v_bb + (1. - c_kt[f]) / v_cb))
             reward += d_bt[f] * (delta - latency) * r_0
-        rewards[identity] = reward
+        rewards[identity] = reward * alpha
     if aggregate:
         return sum(rewards.values())
     return rewards
