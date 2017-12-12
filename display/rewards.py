@@ -107,7 +107,8 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     ax.spines['top'].set_color('black')
     ax.spines['bottom'].set_color('black')
     max_y, min_y = 0, 1e10
-    for _, reward in enumerate(rewards_data.values()):
+    counter = 0
+    for _, reward in rewards_data.iteritems():
         if isinstance(reward[0], dict):
             frame = pd.DataFrame(reward)
             frame['total'] = frame.sum(axis=1)
@@ -120,17 +121,21 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
             curve = reward
         current_marker = marker
         if marker == '':
-            current_marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
+            current_marker = AVAILABLE_MARKERS[counter % len(AVAILABLE_MARKERS)]
         if with_standardize:
-            curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
+            if _ == 'Proposed algorithm':
+                curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
+            else:
+                curve = _standardize_(curve, sigma=sigma)
         if x_axis is not None:
-            plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+            plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
                      marker=current_marker, markersize=marker_size, markerfacecolor='None',
-                     markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
+                     markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
         else:
-            plt.plot(curve, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+            plt.plot(curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
                      marker=current_marker, markersize=marker_size, markerfacecolor='None',
-                     markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
+                     markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
+        counter += 1
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center', color='k', fontproperties=font_properties)
     font_properties.set_size(label_size)

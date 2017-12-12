@@ -121,9 +121,9 @@ def plot_algorithms_comparison():
         'x_label': u'迭代次数 / ',
         'y_label': u'缓存回报 / ',
         'all_curves': True,
-        'with_standardize': False,
-        'standardize_init': 6,
-        'sigma': 3,
+        'with_standardize': True,
+        'standardize_init': 19,
+        'sigma': 0.75,
         'loc': 4,
         'legend_size': 15,
         'fixed_theta': True,
@@ -228,5 +228,5 @@ if __name__ == '__main__':
     t_comparison_algorithm = primal_dual_recover
     algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
                          circles=2000, dump=True, **plot_parameters)
-    # plot_algorithms_comparison()
+    plot_algorithms_comparison()
     # plot_regrets_comparison()
