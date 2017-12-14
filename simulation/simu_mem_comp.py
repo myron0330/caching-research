@@ -124,7 +124,7 @@ def plot_memory_comparison():
         'legend_size': 15,
         'texts': [
             {
-                'args': (0.72, 93, '$\\frac{M_b}{{\\sum}_{k=1}^{K}{s_k}}$'),
+                'args': (0.685, 92, '$\\lambda$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
