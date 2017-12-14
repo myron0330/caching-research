@@ -42,7 +42,7 @@ def zipf_comparison(algorithm, circles=200, dump=True, display=True, algorithm_t
     for config in configs:
         key = 'zipf-{}'.format(config.split('_')[-1][:-4])
         rewards_dict[key] = simulate_with_(algorithm, config=config, circles=circles,
-                                           dump=dump, algorithm_type=algorithm_type,
+                                           dump=dump, algorithm_type=algorithm_type, fixed_theta=True,
                                            prefix=prefix)
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
@@ -79,8 +79,8 @@ def display_zipf_iteration(prefix, **plot_kwargs):
     rewards_dict = OrderedDict()
     x_axis = list()
     for pk in pks:
-        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[6:]
-        frame = pd.DataFrame(rewards).head(100)
+        rewards = pickle.load(open('../performance/{}'.format(pk), 'r+'))[20:]
+        frame = pd.DataFrame(rewards)
         key = pk.split('.')[2]
         x_axis.append(float(pk.split('-')[-1][:-3]))
         rewards_dict.setdefault(algorithm_mapper[key], list())
@@ -95,7 +95,7 @@ def display_zipf_iteration(prefix, **plot_kwargs):
     display_multiple_(results, **plot_kwargs)
 
 
-def compare_sizes_with_(algorithms, circles=100, dump=False, display=False, prefix='', **plot_parameters):
+def compare_zipf_with_(algorithms, circles=100, dump=False, display=False, prefix='', **plot_parameters):
     for current_algorithm in algorithms:
         if current_algorithm == branch_and_bound:
             zipf_comparison(algorithm=branch_and_bound, circles=circles, dump=dump,
@@ -114,7 +114,7 @@ def compare_sizes_with_(algorithms, circles=100, dump=False, display=False, pref
 def plot_zipf_comparison():
     parameters = {
         'display_length': 100,
-        'line_width': 2,
+        'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
@@ -127,7 +127,7 @@ def plot_zipf_comparison():
         'sigma': 1.5,
         'texts': [
             {
-                'args': (2.24, 0.85, '$\\gamma$'),
+                'args': (1.42, 132, '$\\gamma$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -135,7 +135,7 @@ def plot_zipf_comparison():
                 }
             },
             {
-                'args': (1.02, 16.6, '$\\overline{R}$'),
+                'args': (0.636, 315, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -146,10 +146,10 @@ def plot_zipf_comparison():
         ],
         'save_path': '../plots/zipf_comparison.jpg'
     }
-    display_zipf_iteration(['zipf.rewards.branch_and_bound.dynamic.4-',
-                            'zipf.rewards.primal_dual_recover.4-',
-                            'zipf.rewards.lfu.4-',
-                            'zipf.rewards.lru.4-'
+    display_zipf_iteration(['zipf.rewards.branch_and_bound.fixed.5-',
+                            'zipf.rewards.primal_dual_recover.5-',
+                            'zipf.rewards.lfu.5-',
+                            'zipf.rewards.lru.5-'
                              ], **parameters)
 
 
@@ -168,17 +168,16 @@ if __name__ == '__main__':
         'sigma': 1.5,
         'save_path': '../plots/zipf_comparison.jpg'
     }
-    # compare_sizes_with_(algorithms=[branch_and_bound],
-    #                     circles=100, dump=True, prefix='zipf', display=False,
-    #                     **plot_parameters)
+    # algorithms = [primal_dual_recover, branch_and_bound, lfu, lru]
+    # compare_zipf_with_(algorithms=algorithms,
+    #                    circles=100, dump=True, prefix='zipf', display=False,
+    #                    **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)
     # display_memory_iteration(['rewards.branch_and_bound.dynamic.4-20-',
     #                           'rewards.primal_dual_recover.4-20-',
     #                           'rewards.lfu.4-20-',
     #                           'rewards.lru.4-20-',
     #                           ], **plot_parameters)
-    # algorithms = [primal_dual_recover, branch_and_bound, lfu, lru]
-    # compare_memories_with_(algorithms, circles=100, dump=True, display=False)
     # plot_memory_comparison()
     # display_sizes_iteration(prefix='sizes.', **plot_parameters)
     plot_zipf_comparison()

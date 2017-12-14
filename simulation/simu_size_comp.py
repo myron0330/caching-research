@@ -114,7 +114,7 @@ def compare_sizes_with_(algorithms, circles=100, dump=False, display=False, pref
 def plot_sizes_comparison():
     parameters = {
         'display_length': 100,
-        'line_width': 2,
+        'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
@@ -122,14 +122,15 @@ def plot_sizes_comparison():
         'x_label': u'文件数量 ／ ',
         'y_label': u'平均缓存回报 ／',
         'with_standardize': True,
-        'standardize_init': 3,
-        'sigma': 1,
+        'standardize_init': 2,
+        'standardize_special': False,
+        'sigma': 0.5,
         'legend_size': 15,
-        'y_min_lim': 280,
+        'y_min_lim': 200,
         'loc': 4,
         'texts': [
             {
-                'args': (62.2, 13.35, '$K$'),
+                'args': (62.2, 187, '$K$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -137,7 +138,7 @@ def plot_sizes_comparison():
                 }
             },
             {
-                'args': (6, 21.18, '$\\overline{R}$'),
+                'args': (5.2, 340, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -170,9 +171,9 @@ if __name__ == '__main__':
         'sigma': 1.5,
         'save_path': '../plots/sizes_comparison.jpg'
     }
-    compare_sizes_with_(algorithms=[lru, lfu, primal_dual_recover, branch_and_bound],
-                        circles=200, dump=True, prefix='sizes', display=False,
-                        **plot_parameters)
+    # compare_sizes_with_(algorithms=[primal_dual_recover],
+    #                     circles=200, dump=True, prefix='sizes', display=False,
+    #                     **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)
     # display_memory_iteration(['rewards.branch_and_bound.dynamic.4-20-',
     #                           'rewards.primal_dual_recover.4-20-',
@@ -183,4 +184,4 @@ if __name__ == '__main__':
     # compare_memories_with_(algorithms, circles=100, dump=True, display=False)
     # plot_memory_comparison()
     # display_sizes_iteration(prefix='sizes.', **plot_parameters)
-    # plot_sizes_comparison()
+    plot_sizes_comparison()

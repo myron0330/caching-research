@@ -93,8 +93,9 @@ def display_regret_by_(file_names, **plot_kwargs):
     rewards_dict = OrderedDict()
     for file_name in file_names:
         rewards = pickle.load(open('../performance/{}'.format(file_name), 'r+'))
-        key = file_name.split('.')[1]
-        frame = pd.DataFrame(rewards)
+        key = file_name.split('.')[2]
+        file_number = int(file_name.split('-')[1])
+        frame = pd.DataFrame(rewards).iloc[file_number:, :]
         frame['total'] = frame.sum(axis=1)
         frame['cumulative'] = frame['total'].cumsum()
         rewards_dict[algorithm_mapper[key]] = np.array(frame['cumulative'])
@@ -112,7 +113,7 @@ def display_regret_by_(file_names, **plot_kwargs):
 def plot_algorithms_comparison():
     parameters = {
         'display_length': 50,
-        'line_width': 2,
+        'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
@@ -122,15 +123,15 @@ def plot_algorithms_comparison():
         'y_label': u'缓存回报 / ',
         'all_curves': True,
         'with_standardize': True,
-        'standardize_init': 19,
-        'sigma': 0.75,
+        'standardize_init': 25,
+        'sigma': 0.6,
         'loc': 4,
         'legend_size': 15,
         'fixed_theta': True,
         'y_min_lim': 0,
         'texts': [
             {
-                'args': (28.5, -1.45, '$t$'),
+                'args': (28.5, -23.5, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -138,7 +139,7 @@ def plot_algorithms_comparison():
                 }
             },
             {
-                'args': (-2.15, 14.5, '$R$'),
+                'args': (-2.65, 240, '$R$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -149,17 +150,17 @@ def plot_algorithms_comparison():
         ],
         'save_path': '../plots/algorithms_comparison.jpg',
     }
-    display_algorithm_comparison_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-2.0.pk',
-                                      'algorithm.rewards.primal_dual_recover.5-20-100-20-2.0.pk',
-                                      'algorithm.rewards.lfu.5-20-100-20-2.0.pk',
-                                      'algorithm.rewards.lru.5-20-100-20-2.0.pk'], **parameters)
+    display_algorithm_comparison_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-0.9.pk',
+                                      'algorithm.rewards.primal_dual_recover.5-20-100-20-0.9.pk',
+                                      'algorithm.rewards.lfu.5-20-100-20-0.9.pk',
+                                      'algorithm.rewards.lru.5-20-100-20-0.9.pk'], **parameters)
     return None
 
 
 def plot_regrets_comparison():
     parameters = {
         'display_length': 100,
-        'line_width': 2,
+        'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
@@ -169,7 +170,7 @@ def plot_regrets_comparison():
         'y_label': u'对数化损失 / ',
         'all_curves': True,
         'with_standardize': False,
-        'standardize_init': 6,
+        'standardize_init': 20,
         'sigma': 3,
         'loc': 4,
         'legend_size': 15,
@@ -177,7 +178,7 @@ def plot_regrets_comparison():
         'y_min_lim': 0,
         'texts': [
             {
-                'args': (1115, -0.28, '$t$'),
+                'args': (1115, -0.345, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -185,7 +186,7 @@ def plot_regrets_comparison():
                 }
             },
             {
-                'args': (-65, 3.15, '$Log(reg)$'),
+                'args': (-65, 3.85, '$Log(reg)$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -196,10 +197,10 @@ def plot_regrets_comparison():
         ],
         'save_path': '../plots/regrets_comparison.jpg',
     }
-    display_regret_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-2.0.pk',
-                        'algorithm.rewards.primal_dual_recover.5-20-100-20-2.0.pk',
-                        'algorithm.rewards.lfu.5-20-100-20-2.0.pk',
-                        'algorithm.rewards.lru.5-20-100-20-2.0.pk'], **parameters)
+    display_regret_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-0.9.pk',
+                        'algorithm.rewards.primal_dual_recover.5-20-100-20-0.9.pk',
+                        'algorithm.rewards.lfu.5-20-100-20-0.9.pk',
+                        'algorithm.rewards.lru.5-20-100-20-0.9.pk'], **parameters)
 
 
 if __name__ == '__main__':
@@ -224,9 +225,11 @@ if __name__ == '__main__':
         'save_path': '../plots/regrets_comparison.jpg',
         # 'save_path': '../plots/algorithms_comparison.jpg',
     }
-    t_algorithms = [primal_dual_recover]
-    t_comparison_algorithm = primal_dual_recover
-    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
-                         circles=2000, dump=True, **plot_parameters)
-    plot_algorithms_comparison()
-    # plot_regrets_comparison()
+    # t_algorithms = [primal_dual_recover]
+    # t_comparison_algorithm = primal_dual_recover
+    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
+    #                      circles=50, dump=False, **plot_parameters)
+    # algorithm_comparison([primal_dual_recover], comparison_algorithm=primal_dual_recover, prefix='algorithm',
+    #                      circles=2000, dump=True, **plot_parameters)
+    # plot_algorithms_comparison()
+    plot_regrets_comparison()

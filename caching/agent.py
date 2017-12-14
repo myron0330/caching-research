@@ -231,10 +231,12 @@ class Agent(object):
         Returns:
             np.array: demands of users in base station bs_identity at time t
         """
+        # 1000000
+        # 100000000
         return zipf_array(a=self.variables.zipf_a, low_bound=0,
                           up_bound=len(self.variables.files),
                           size=self.variables.users[bs_identity],
-                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+5000000)
+                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+1000000)
 
     def _observe_demands(self):
         """

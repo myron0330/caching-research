@@ -73,7 +73,7 @@ def display_single_(reward_data, all_curves=False, display_length=500, fig_size=
 
 def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_width=1,
                       title_size=18, label_size=16, marker=None, marker_size=10, legend_size=10,
-                      with_standardize=False, standardize_init=0, sigma=1.5,
+                      with_standardize=False, standardize_init=0, sigma=1.5, standardize_special=True,
                       title='', x_label=u'迭代次数', y_label=u'回报收益',
                       save_path=None, x_axis=None, loc=None,
                       texts=None, **kwargs):
@@ -89,6 +89,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         label_size(float): label size
         with_standardize(boolean): whether to do standardize
         standardize_init(int): standardize init value
+        standardize_special(boolean): standardize special
         sigma(int): sigma threshold
         marker(string): marker on point
         marker_size(float): marker size
@@ -107,7 +108,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     ax.spines['top'].set_color('black')
     ax.spines['bottom'].set_color('black')
     max_y, min_y = 0, 1e10
-    counter = 0
+    counter = 0 if len(rewards_data) == 4 else 1
     for _, reward in rewards_data.iteritems():
         if isinstance(reward[0], dict):
             frame = pd.DataFrame(reward)
@@ -123,10 +124,13 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         if marker == '':
             current_marker = AVAILABLE_MARKERS[counter % len(AVAILABLE_MARKERS)]
         if with_standardize:
-            if _ == 'Proposed algorithm':
-                curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
+            if standardize_special:
+                if _ == 'Proposed algorithm':
+                    curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
+                else:
+                    curve = _standardize_(curve, sigma=sigma)
             else:
-                curve = _standardize_(curve, sigma=sigma)
+                curve = curve[:standardize_init] + _standardize_(curve[standardize_init:], sigma=sigma)
         if x_axis is not None:
             plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
                      marker=current_marker, markersize=marker_size, markerfacecolor='None',

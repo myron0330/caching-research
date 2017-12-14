@@ -37,7 +37,7 @@ def memory_comparison(algorithm, circles=200, dump=True, display=True, algorithm
         prefix(string): prefix
     """
     configs = filter(lambda x: x.startswith('memory_comparison'), listdir('../etc'))
-    configs = ['memory_comparison_25.cfg']
+    # configs = ['memory_comparison_25.cfg']
     rewards_dict = dict()
     for config in configs:
         key = 'Memory-{}'.format(config.split('_')[-1]).split('.')[0]
@@ -111,7 +111,7 @@ def compare_memories_with_(algorithms, circles=100, dump=False, display=False, *
 def plot_memory_comparison():
     parameters = {
         'display_length': 100,
-        'line_width': 2,
+        'line_width': 2.5,
         'title_size': 20,
         'label_size': 16,
         'marker': '',
@@ -120,11 +120,11 @@ def plot_memory_comparison():
         'y_label': u'平均缓存回报 / ',
         'with_standardize': True,
         'standardize_init': 0,
-        'sigma': 3,
+        'sigma': 2.5,
         'legend_size': 15,
         'texts': [
             {
-                'args': (0.79, 13.6, '$\\frac{M_b}{{\\sum}_{k=1}^{K}{s_k}}$'),
+                'args': (0.72, 93, '$\\frac{M_b}{{\\sum}_{k=1}^{K}{s_k}}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -132,7 +132,7 @@ def plot_memory_comparison():
                 }
             },
             {
-                'args': (0.152, 21.1, '$\\overline{R}$'),
+                'args': (0.03, 310, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -144,7 +144,7 @@ def plot_memory_comparison():
         'save_path': '../plots/memory_comparison.jpg'
 
     }
-    display_memory_iteration(['memory.rewards.branch_and_bound.dynamic.5-20-',
+    display_memory_iteration(['memory.rewards.branch_and_bound.fixed.5-20-',
                               'memory.rewards.primal_dual_recover.5-20-',
                               'memory.rewards.lfu.5-20-',
                               'memory.rewards.lru.5-20-',
@@ -175,7 +175,6 @@ if __name__ == '__main__':
     #                           'rewards.lfu.4-20-',
     #                           'rewards.lru.4-20-',
     #                           ], **plot_parameters)
-    # algorithms = [primal_dual_recover, branch_and_bound, lfu]
-    algorithms = [branch_and_bound]
-    compare_memories_with_(algorithms, circles=100, dump=True, prefix='memory', display=False)
-    # plot_memory_comparison()
+    # algorithms = [primal_dual_recover, branch_and_bound, lfu, lru]
+    # compare_memories_with_(algorithms, circles=100, dump=True, prefix='memory', display=False)
+    plot_memory_comparison()
