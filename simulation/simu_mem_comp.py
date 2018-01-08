@@ -9,7 +9,7 @@ import pandas as pd
 from os import listdir
 from collections import OrderedDict
 from caching.algorithms import primal_dual_recover, lfu, lru, branch_and_bound
-from display.rewards import display_multiple_
+from display_rewards.rewards import display_multiple_
 from simulation.base import simulate_with_
 from caching.utils.dict_utils import DefaultDict
 from caching.variables import Variables
@@ -116,27 +116,27 @@ def plot_memory_comparison():
         'label_size': 16,
         'marker': '',
         'marker_size': 8,
-        'x_label': u'存储容量比 / ',
-        'y_label': u'平均缓存回报 / ',
+        'x_label': u'',
+        'y_label': u'',
         'with_standardize': True,
         'standardize_init': 0,
         'sigma': 2.5,
         'legend_size': 15,
         'texts': [
             {
-                'args': (0.685, 92, '$\\lambda$'),
+                'args': (0.6, 92, '$\\lambda$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                 }
             },
             {
-                'args': (0.03, 310, '$\\overline{R}$'),
+                'args': (0.025, 275, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }

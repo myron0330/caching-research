@@ -9,7 +9,7 @@ import pandas as pd
 from os import listdir
 from collections import OrderedDict
 from caching.algorithms import primal_dual_recover, lfu, lru, branch_and_bound
-from display.rewards import display_multiple_
+from display_rewards.rewards import display_multiple_
 from simulation.base import simulate_with_
 from caching.utils.dict_utils import DefaultDict
 from caching.variables import Variables

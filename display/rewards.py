@@ -5,6 +5,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from collections import OrderedDict
 from matplotlib import font_manager
 
@@ -152,6 +153,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     diff_y = max_y - min_y
     y_min_lim = kwargs.get('y_min_lim', min_y - diff_y * 0.05)
     y_max_lim = kwargs.get('y_max_lim', max_y + diff_y * 0.05)
+    rcParams.update({'font.size': 14})
     plt.ylim(y_min_lim, y_max_lim)
     if x_axis:
         plt.xlim(x_axis[0], x_axis[-1])

@@ -119,8 +119,8 @@ def plot_algorithms_comparison():
         'marker': '',
         'marker_size': 8,
         'title': '',
-        'x_label': u'迭代次数 / ',
-        'y_label': u'缓存回报 / ',
+        'x_label': u'',
+        'y_label': u'',
         'all_curves': True,
         'with_standardize': True,
         'standardize_init': 25,
@@ -131,19 +131,19 @@ def plot_algorithms_comparison():
         'y_min_lim': 0,
         'texts': [
             {
-                'args': (28.5, -23.5, '$t$'),
+                'args': (25, -23.5, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                 }
             },
             {
-                'args': (-2.65, 240, '$R$'),
+                'args': (-2.8, 200, '$R$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }
@@ -166,8 +166,8 @@ def plot_regrets_comparison():
         'marker': '',
         'marker_size': 8,
         'title': '',
-        'x_label': u'迭代次数 / ',
-        'y_label': u'对数化损失 / ',
+        'x_label': u'',
+        'y_label': u'',
         'all_curves': True,
         'with_standardize': False,
         'standardize_init': 20,
@@ -178,19 +178,19 @@ def plot_regrets_comparison():
         'y_min_lim': 0,
         'texts': [
             {
-                'args': (1115, -0.345, '$t$'),
+                'args': (1000, -0.345, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                 }
             },
             {
-                'args': (-65, 3.85, '$Log(reg)$'),
+                'args': (-80, 3, '$Log(reg)$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }
@@ -225,11 +225,11 @@ if __name__ == '__main__':
         'save_path': '../plots/regrets_comparison.jpg',
         # 'save_path': '../plots/algorithms_comparison.jpg',
     }
-    # t_algorithms = [primal_dual_recover]
-    # t_comparison_algorithm = primal_dual_recover
-    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
-    #                      circles=50, dump=False, **plot_parameters)
+    t_algorithms = [primal_dual_recover]
+    t_comparison_algorithm = primal_dual_recover
+    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
+                         circles=50, dump=False, **plot_parameters)
     # algorithm_comparison([primal_dual_recover], comparison_algorithm=primal_dual_recover, prefix='algorithm',
     #                      circles=2000, dump=True, **plot_parameters)
-    # plot_algorithms_comparison()
-    plot_regrets_comparison()
+    plot_algorithms_comparison()
+    # plot_regrets_comparison()

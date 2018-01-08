@@ -9,7 +9,7 @@ import pandas as pd
 from os import listdir
 from collections import OrderedDict
 from caching.algorithms import primal_dual_recover, lfu, lru, branch_and_bound
-from display.rewards import display_multiple_
+from display_rewards.rewards import display_multiple_
 from simulation.base import simulate_with_
 from caching.utils.dict_utils import DefaultDict
 from caching.variables import Variables
@@ -116,11 +116,11 @@ def plot_sizes_comparison():
         'display_length': 100,
         'line_width': 2.5,
         'title_size': 20,
-        'label_size': 16,
+        'label_size': 18,
         'marker': '',
         'marker_size': 8,
-        'x_label': u'文件数量 ／ ',
-        'y_label': u'平均缓存回报 ／',
+        'x_label': u'',
+        'y_label': u'',
         'with_standardize': True,
         'standardize_init': 2,
         'standardize_special': False,
@@ -130,19 +130,19 @@ def plot_sizes_comparison():
         'loc': 4,
         'texts': [
             {
-                'args': (62.2, 187, '$K$'),
+                'args': (55, 187, '$K$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                 }
             },
             {
-                'args': (5.2, 340, '$\\overline{R}$'),
+                'args': (4.8, 300, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }
@@ -161,11 +161,11 @@ if __name__ == '__main__':
         'display_length': 100,
         'line_width': 2,
         'title_size': 20,
-        'label_size': 16,
+        'label_size': 18,
         'marker': '',
         'marker_size': 8,
-        'x_label': u'文件个数 ／ ',
-        'y_label': u'平均缓存回报 ／',
+        'x_label': u'',
+        'y_label': u'',
         'with_standardize': True,
         'standardize_init': 10,
         'sigma': 1.5,

@@ -9,7 +9,7 @@ import pandas as pd
 from os import listdir
 from collections import OrderedDict
 from caching.algorithms import primal_dual_recover, lfu, lru, branch_and_bound
-from display.rewards import display_multiple_
+from display_rewards.rewards import display_multiple_
 from simulation.base import simulate_with_
 from caching.utils.dict_utils import DefaultDict
 from caching.variables import Variables
@@ -119,27 +119,27 @@ def plot_zipf_comparison():
         'label_size': 16,
         'marker': '',
         'marker_size': 8,
-        'x_label': u'Zipf分布参数 ／ ',
-        'y_label': u'平均缓存回报 ／',
+        'x_label': u'',
+        'y_label': u'',
         'with_standardize': True,
         'standardize_init': 10,
         'legend_size': 15,
         'sigma': 1.5,
         'texts': [
             {
-                'args': (1.42, 132, '$\\gamma$'),
+                'args': (1.3, 132, '$\\gamma$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                 }
             },
             {
-                'args': (0.636, 315, '$\\overline{R}$'),
+                'args': (0.63, 275, '$\\overline{R}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
-                    'fontsize': 16,
+                    'fontsize': 20,
                     'rotation': 90,
                 }
             }

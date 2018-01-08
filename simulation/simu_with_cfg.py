@@ -5,7 +5,7 @@
 import pickle
 from caching.agent import Agent
 from caching.algorithms.lp_solvers import primal_dual_recover
-from display.rewards import display_single_
+from display_rewards.rewards import display_single_
 
 
 def simulate_with_(algorithm, run=False, config=None, circles=200, perf_file=None, optimal=False, **kwargs):
