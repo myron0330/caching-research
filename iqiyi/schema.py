@@ -54,6 +54,13 @@ class CategorySchema(ValueObject):
         )
 
 
-__all__ = [
-    'CategorySchema'
-]
+# class Album(ValueObject):
+#
+#     __slots__ = [
+#         ''
+#     ]
+#
+#
+# __all__ = [
+#     'CategorySchema'
+# ]

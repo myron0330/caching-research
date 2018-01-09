@@ -14,7 +14,7 @@ def update_one_(collection, schema):
     collection.update_one(query_field, item, upsert=True)
 
 
-def query_from_(collection, key=None, **kwargs):
+def query_from_(collection, key=None, fields=None, **kwargs):
     """
     Query from schemas from collection
     """
@@ -23,6 +23,11 @@ def query_from_(collection, key=None, **kwargs):
     else:
         raise Exception('Schema Error')
     items = list()
+    if fields:
+        for item in collection.find(kwargs, fields):
+            item.pop('_id')
+            items.append(item)
+        return items
     for item in collection.find(kwargs):
         item.pop('_id')
         items.append(schema.from_query(item))
