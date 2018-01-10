@@ -150,7 +150,7 @@ class AlbumSchema(ValueObject):
         """
         return (
             {
-                'album_id': self.album_id,
+                'play_url': self.play_url,
             },
             {
                 '$set': {
