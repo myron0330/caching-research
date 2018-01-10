@@ -27,3 +27,4 @@ class Urls(object):
     category_url = with_parameter_('http://expand.video.iqiyi.com/api/category/list.json')
     album_url = with_parameter_('http://expand.video.iqiyi.com/api/album/list.json?'
                                 'categoryId={category_id}&pageId={page_id}')
+    video_url = with_parameter_('http://expand.video.iqiyi.com/api/fb?playurl={play_url}')

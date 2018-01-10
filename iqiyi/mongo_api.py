@@ -2,6 +2,7 @@
 # **********************************************************************************#
 #     File: 
 # **********************************************************************************#
+from uuid import uuid1
 from mongo_base import Collections
 from schema import *
 
@@ -36,3 +37,23 @@ def query_from_(collection, key=None, fields=None, **kwargs):
     return {
         getattr(item, key): item for item in items
     }
+
+
+def dump_to_(batch_op, schema, unit_dump=True):
+    """
+    Dump schema to mongodb
+
+    Args:
+        batch_op(obj): schema type
+        schema(schema or list, dict of schema): schema object
+        unit_dump(boolean): whether to do unit dump
+    """
+    if isinstance(schema, list):
+        for _ in schema:
+            batch_op.append(*_.to_mongodb_item())
+    else:
+        schema_iter = schema if isinstance(schema, dict) else {str(uuid1()): schema}
+        for _, schema in schema_iter.iteritems():
+            batch_op.append(*schema.to_mongodb_item())
+    if unit_dump:
+        batch_op.commit()
