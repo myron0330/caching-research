@@ -302,5 +302,6 @@ class VideoSchema(ValueObject):
 
 __all__ = [
     'CategorySchema',
-    'AlbumSchema'
+    'AlbumSchema',
+    'VideoSchema'
 ]
