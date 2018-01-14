@@ -21,6 +21,8 @@ def query_from_(collection, key=None, fields=None, **kwargs):
     """
     if collection == Collections.category:
         schema = CategorySchema
+    elif collection == Collections.album:
+        schema = AlbumSchema
     else:
         raise Exception('Schema Error')
     items = list()

@@ -3,7 +3,8 @@
 #     File:  Test cases of utils
 # **********************************************************************************#
 import unittest
-from caching.utils.random_utils import zipf_array
+
+from utils.random_utils import zipf_array
 
 
 class TestRandomUtils(unittest.TestCase):

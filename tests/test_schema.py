@@ -2,8 +2,9 @@
 # **********************************************************************************#
 #     File: 
 # **********************************************************************************#
-from section_cmab.variables import Variables
+from iqiyi.mongo_base import Collections
+from iqiyi.mongo_api import query_from_
 
-variable = Variables.from_('default.cfg')
-print variable.base_stations
-print variable.to_dict()
+
+data = query_from_(Collections.album, key=None, fields={'play_url': 1})
+pass

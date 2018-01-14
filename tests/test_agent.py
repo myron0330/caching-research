@@ -3,9 +3,9 @@
 #     File:  Test cases of agent
 # **********************************************************************************#
 import unittest
-from caching.agent import Agent
-from caching.algorithms.lp_solvers import primal_dual_recover
-from caching.algorithms.bnb_solvers import branch_and_bound
+from section_cmab.agent import Agent
+from section_cmab.algorithms.lp_solvers import primal_dual_recover
+from section_cmab.algorithms.bnb_solvers import branch_and_bound
 
 
 class TestAgent(unittest.TestCase):
