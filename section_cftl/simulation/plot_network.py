@@ -8,7 +8,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def plot_network(fig_size=None, users_network=None, bs_network=None, dump=False, save_path=None):
+def plot_network(fig_size=None, users_network=None, bs_network=None, dump=False, save_path=None,
+                 radius=1):
     """
     Plot network topology.
     Args:
@@ -17,6 +18,7 @@ def plot_network(fig_size=None, users_network=None, bs_network=None, dump=False,
         bs_network(obj): Network object of base stations
         dump(boolean): whether to save the picture
         save_path(string): save path
+        radius(float): radius
 
     Returns:
 
@@ -26,7 +28,7 @@ def plot_network(fig_size=None, users_network=None, bs_network=None, dump=False,
     nx.draw(users_network, pos=users_network.positions_info, with_labels=False, node_size=10, width=0, node_color='k')
     nx.draw(bs_network, pos=bs_network.positions_info, with_labels=False, node_size=50, width=0, node_color='r')
     theta = np.arange(0, 2*np.pi, 0.01)
-    r = 1.1
+    r = radius
     for bs, position_info in bs_network.positions_info.iteritems():
         x = position_info[0] + r * np.cos(theta)
         y = position_info[1] + r * np.sin(theta)
@@ -44,6 +46,7 @@ if __name__ == '__main__':
         'fig_size': (6, 6),
         'users_network': pickle.load(open('../resources/users_network.pk', 'r+')),
         'bs_network': pickle.load(open('../resources/bs_network.pk', 'r+')),
-        'dump': True
+        'dump': False,
+        'radius': 1.1
     }
     plot_network(**plot_parameters)

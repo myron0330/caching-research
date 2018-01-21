@@ -13,6 +13,48 @@ from utils.rewards_utils import calculate_cftl_rewards
 from . variables import Variables
 
 
+def _calculate_distance(position_a, position_b, distance_scale=1.):
+    """
+    Calculate distance.
+    """
+    return distance_scale * sum((position_a - position_b)**2)**0.5
+
+
+def _get_users_bs_distance(bs_network, users_network, distance_scale=1.):
+    """
+    Calculate users - base stations distances among bs and users.
+
+    Returns:
+        matrix: R**(users_number, bs_number)
+    """
+    bs_layout = bs_network.layout
+    users_layout = users_network.layout
+    user_bs_distance = np.zeros((users_network.node_number, bs_network.node_number))
+    for user, user_position in users_layout.iteritems():
+        for bs, bs_position in bs_layout.iteritems():
+            user_bs_distance[user, bs] = _calculate_distance(user_position, bs_position,
+                                                             distance_scale=distance_scale)
+    return user_bs_distance
+
+
+def _get_user_neighbor_bs(user_bs_distance, radius):
+    """
+
+    Args:
+        user_bs_distance(matrix): user bs distance info dict
+        radius(float): radius information
+
+    Returns:
+        dict: key-value: user_node --> bs neighbors list
+    """
+    user_neighbor_bs = dict()
+    for user in xrange(user_bs_distance.shape[0]):
+        distance = user_bs_distance[user, :]
+        neighbors = list(np.where(distance < radius)[0])
+        user_neighbor_bs[user] = neighbors
+    return user_neighbor_bs
+
+
 class Agent(object):
     """
     The global player, whom to solve the caching problem.
@@ -25,6 +67,11 @@ class Agent(object):
         self.y_k = np.zeros((1, self.variables.file_number))
         self.bs_network = pickle.load(open(self.variables.bs_network, 'r+'))
         self.users_network = pickle.load(open(self.variables.users_network, 'r+'))
+        self.user_bs_distance = _get_users_bs_distance(bs_network=self.bs_network,
+                                                       users_network=self.users_network,
+                                                       distance_scale=self.variables.distance_scale)
+        self.user_neighbor_bs = _get_user_neighbor_bs(self.user_bs_distance,
+                                                      radius=self.variables.radius*self.variables.distance_scale)
         self.rewards = list()
 
     @classmethod
@@ -44,7 +91,7 @@ class Agent(object):
         algorithm iteration
 
         Args:
-            algorithm(function): algorithm
+            algorithm(func): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             prefix(string): prefix
