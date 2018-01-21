@@ -15,9 +15,9 @@ class Variables(object):
                  users=None, user_memory=None, user_number=None,
                  files=None, file_number=None, file_size=None,
                  zipf_a=None, bs_network=None, users_network=None,
-                 distance_scale=None, radius=None,
+                 macro_bs_network=None, distance_scale=None, radius=None,
                  p_b=None, p_0=None, sigma=None, beta_bu=None,
-                 beta_0u=None, alpha=None, w=None):
+                 beta_0u=None, alpha=None, w=None, r_u0=None):
         self.base_stations = base_stations
         self.bs_number = bs_number
         self.bs_memory = bs_memory
@@ -29,6 +29,7 @@ class Variables(object):
         self.file_size = file_size
         self.zipf_a = zipf_a
         self.bs_network = bs_network
+        self.macro_bs_network = macro_bs_network
         self.users_network = users_network
         self.distance_scale = distance_scale
         self.radius = radius
@@ -39,6 +40,7 @@ class Variables(object):
         self.beta_0u = beta_0u
         self.alpha = alpha
         self.w = w
+        self.r_u0 = r_u0
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -67,6 +69,7 @@ class Variables(object):
         file_size = randint_array(low_bound=lowest_size, up_bound=highest_size, size=file_number)
 
         bs_network = '/'.join([current_path, config.get('network', 'bs_network')])
+        macro_bs_network = '/'.join([current_path, config.get('network', 'macro_bs_network')])
         users_network = '/'.join([current_path, config.get('network', 'users_network')])
         distance_scale = float(config.get('network', 'distance_scale'))
         radius = float(config.get('network', 'radius'))
@@ -79,7 +82,8 @@ class Variables(object):
         beta_bu = float(config.get('sinr', 'beta_bu'))
         beta_0u = float(config.get('sinr', 'beta_0u'))
         alpha = float(config.get('sinr', 'alpha'))
-        W = float(config.get('sinr', 'W'))
+        w = float(config.get('sinr', 'W'))
+        r_u0 = float(config.get('sinr', 'r_u0'))
 
         params = {
             'base_stations': base_stations,
@@ -94,6 +98,7 @@ class Variables(object):
             'zipf_a': zipf_a,
             'bs_network': bs_network,
             'users_network': users_network,
+            'macro_bs_network': macro_bs_network,
             'distance_scale': distance_scale,
             'radius': radius,
             'p_b': p_b,
@@ -102,7 +107,8 @@ class Variables(object):
             'beta_bu': beta_bu,
             'beta_0u': beta_0u,
             'alpha': alpha,
-            'w': W
+            'w': w,
+            'r_u0': r_u0
         }
 
         return cls(**params)
