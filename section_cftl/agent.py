@@ -10,6 +10,7 @@ from utils.dict_utils import DefaultDict
 from utils.random_utils import zipf_array
 from utils.rewards_utils import calculate_cftl_rewards
 from . variables import Variables
+from . algorithms.solvers import *
 
 
 def _calculate_distance(position_a, position_b, distance_scale=1.):
@@ -109,7 +110,7 @@ class Agent(object):
     def __init__(self, variables):
         self.t = 0
         self.variables = variables
-        self.theta_est_uk = np.zeros((self.variables.user_number, self.variables.file_number))
+        self.theta_uk = np.zeros((self.variables.user_number, self.variables.file_number))
         self.x_uk = np.zeros((self.variables.user_number, self.variables.file_number))
         self.y_k = np.zeros((1, self.variables.file_number))
         self.macro_bs_network = pickle.load(open(self.variables.macro_bs_network, 'r+'))
@@ -127,7 +128,15 @@ class Agent(object):
         self.r_u0 = _get_user_bs_transmission_rate(self.variables, self.d_u0, bs_type='macro')
         self.l_ukb = _get_users_latency(self.variables, self.r_ub, self.neighbor_ub)
         self.l_uk0 = _get_users_latency(self.variables, self.r_u0)
+        self.l_uk_diff = self.l_uk0 - self.l_ukb
         self.rewards = list()
+        self._build()
+
+    def _build(self):
+        """
+        Build agent.
+        """
+        self._estimate_theta()
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -193,6 +202,22 @@ class Agent(object):
             demand_statics = [base_station.demand_statics[_] for _ in xrange(self.variables.file_number)]
             self.y_k[self.t][identity, :] = demand_statics
 
+    def _estimate_theta(self, theta_est=None):
+        """
+        Theta estimation
+
+        Args:
+            theta_est(array): theta est
+        """
+        if theta_est is None:
+            zipf_func = \
+                (lambda x, n: x ** (-self.variables.zipf_a) / sum([(_ + 1) ** (-self.variables.zipf_a)
+                                                                   for _ in xrange(n)]))
+            theta_est = np.array([zipf_func(_ + 1, self.variables.file_number)
+                                  for _ in xrange(self.variables.file_number)])
+        for _ in xrange(self.theta_uk.shape[0]):
+            self.theta_uk[_, :] = theta_est
+
     def _caching_files(self, algorithm=None, initialize_circles=None):
         """
         Caching files at time slot t
@@ -206,5 +231,11 @@ class Agent(object):
     def _calculate_rewards(self, alpha=1.):
         """
         Calculate rewards of users
+        """
+        raise NotImplementedError
+
+    def _solving_by(self, algorithm=None):
+        """
+        solving problems algorithms
         """
         raise NotImplementedError
