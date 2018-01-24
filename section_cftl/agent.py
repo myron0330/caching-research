@@ -11,6 +11,7 @@ from utils.random_utils import zipf_array
 from utils.rewards_utils import calculate_cftl_rewards
 from . variables import Variables
 from . algorithms.solvers import *
+from . algorithms.enums import Algorithm
 
 
 def _calculate_distance(position_a, position_b, distance_scale=1.):
@@ -155,27 +156,56 @@ class Agent(object):
         algorithm iteration
 
         Args:
-            algorithm(func): algorithm
+            algorithm(string): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             prefix(string): prefix
         """
         while self.t < circles:
-            self._caching_files(algorithm)
-            self._observe_demands()
+            self._solving_by(algorithm)
             self._calculate_rewards()
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
-                                                                        algorithm.func_name,
-                                                                        self.variables.bs_number,
-                                                                        self.variables.file_number,
-                                                                        self.variables.bs_memory,
-                                                                        self.variables.user_size,
-                                                                        self.variables.zipf_a)
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                           algorithm,
+                                                                           self.variables.bs_number,
+                                                                           self.variables.file_number,
+                                                                           self.variables.bs_memory,
+                                                                           self.variables.user_number,
+                                                                           self.variables.user_memory,
+                                                                           self.variables.zipf_a)
             pickle.dump(self.rewards, open(performance_file, 'w+'))
         return self.rewards
+
+    def _solving_by(self, algorithm=None):
+        """
+        solving problems algorithms
+        """
+        if algorithm == Algorithm.proposed_algorithm:
+            self.x_uk = solve_x(self)
+            self.y_k = solve_y(self)
+
+    def _calculate_rewards(self, multiplier=1.):
+        """
+        Calculate rewards of users
+
+        Args:
+            multiplier(int or float): multiplier constant
+        """
+        uk_shape = self.x_uk.shape
+        x_uk = self.x_uk
+        y_k = self.y_k
+        theta_uk = self.theta_uk
+        l_uk0 = self.l_uk0
+        l_ukb = self.l_ukb
+        neighbor_size_dict = {key: len(value) for key, value in self.neighbor_ub.iteritems()}
+        y_uk = np.zeros(uk_shape)
+        for u in xrange(uk_shape[0]):
+            neighbor_size = neighbor_size_dict[u]
+            y_uk[u, :] = y_k ** neighbor_size
+        matrix = theta_uk * ((l_uk0 - l_ukb) * y_uk + l_ukb) * x_uk
+        self.rewards.append(np.sum(matrix) * multiplier)
 
     def _generate_demands(self, bs_identity):
         """
@@ -225,17 +255,5 @@ class Agent(object):
         Args:
             algorithm(function): algorithm
             initialize_circles(int): initialize circles
-        """
-        raise NotImplementedError
-
-    def _calculate_rewards(self, alpha=1.):
-        """
-        Calculate rewards of users
-        """
-        raise NotImplementedError
-
-    def _solving_by(self, algorithm=None):
-        """
-        solving problems algorithms
         """
         raise NotImplementedError
