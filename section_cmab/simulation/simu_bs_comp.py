@@ -10,8 +10,7 @@ from os import listdir
 
 import numpy as np
 import pandas as pd
-from display_rewards.rewards import display_multiple_
-
+from section_cmab.display.rewards import display_multiple_
 from section_cmab.algorithms import primal_dual_recover, branch_and_bound
 from section_cmab.simulation.base import simulate_with_
 

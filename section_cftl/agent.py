@@ -6,9 +6,7 @@ from __future__ import division
 import pickle
 import numpy as np
 from core.basic import BaseStation
-from utils.dict_utils import DefaultDict
 from utils.random_utils import zipf_array
-from utils.rewards_utils import calculate_cftl_rewards
 from . variables import Variables
 from . algorithms.solvers import *
 from . algorithms.enums import Algorithm
@@ -151,7 +149,18 @@ class Agent(object):
         variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
 
-    def iter_with_(self, algorithm, circles=300, dump=True, prefix=''):
+    def reset(self):
+        """
+        Reset
+        """
+        self.theta_uk = np.zeros((self.variables.user_number, self.variables.file_number))
+        self.x_uk = np.zeros((self.variables.user_number, self.variables.file_number))
+        self.y_k = np.zeros((1, self.variables.file_number))
+        del self.rewards[:]
+        self.t = 0
+        self._build()
+
+    def iter_with_(self, algorithm, circles=300, dump=True, prefix='', decay=0.8):
         """
         algorithm iteration
 
@@ -160,35 +169,39 @@ class Agent(object):
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             prefix(string): prefix
+            decay(float): algorithm step decay
         """
+        self.reset()
         while self.t < circles:
-            self._solving_by(algorithm)
-            self._calculate_rewards()
+            self._solving_by(algorithm, decay=decay)
+            self._calculate_latency()
+            print 'Iteration {} finished with reward {}.'.format(self.t, self.rewards[-1])
             self.t += 1
         if dump:
             performance_file = \
-                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}-{}.pk'.format(prefix,
-                                                                           algorithm,
-                                                                           self.variables.bs_number,
-                                                                           self.variables.file_number,
-                                                                           self.variables.bs_memory,
-                                                                           self.variables.user_number,
-                                                                           self.variables.user_memory,
-                                                                           self.variables.zipf_a)
+                '../performance/{}.latency.{}.{}-{}-{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                              algorithm,
+                                                                              self.variables.bs_number,
+                                                                              self.variables.file_number,
+                                                                              self.variables.bs_memory,
+                                                                              self.variables.user_number,
+                                                                              self.variables.user_memory,
+                                                                              self.variables.zipf_a,
+                                                                              decay)
             pickle.dump(self.rewards, open(performance_file, 'w+'))
         return self.rewards
 
-    def _solving_by(self, algorithm=None):
+    def _solving_by(self, algorithm=None, decay=0.7):
         """
         solving problems algorithms
         """
         if algorithm == Algorithm.proposed_algorithm:
-            self.x_uk = solve_x(self)
-            self.y_k = solve_y(self)
+            self.x_uk += (decay ** self.t) * (solve_x(self) - self.x_uk)
+            self.y_k += (decay ** self.t) * (solve_y(self) - self.y_k)
 
-    def _calculate_rewards(self, multiplier=1.):
+    def _calculate_latency(self, multiplier=1.):
         """
-        Calculate rewards of users
+        Calculate latency of users
 
         Args:
             multiplier(int or float): multiplier constant

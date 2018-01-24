@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from section_cmab.algorithms import *
-from section_cmab.display import display_multiple_, display_single_
+from section_cmab.display.rewards import display_multiple_, display_single_
 from section_cmab.simulation.base import simulate_with_
 
 algorithm_mapper = {
@@ -226,10 +226,10 @@ if __name__ == '__main__':
         'save_path': '../plots/regrets_comparison.jpg',
         # 'save_path': '../plots/algorithms_comparison.jpg',
     }
-    t_algorithms = [primal_dual_recover]
-    t_comparison_algorithm = primal_dual_recover
-    algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
-                         circles=50, dump=False, **plot_parameters)
+    # t_algorithms = [primal_dual_recover]
+    # t_comparison_algorithm = primal_dual_recover
+    # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
+    #                      circles=50, dump=False, **plot_parameters)
     # algorithm_comparison([primal_dual_recover], comparison_algorithm=primal_dual_recover, prefix='algorithm',
     #                      circles=2000, dump=True, **plot_parameters)
     plot_algorithms_comparison()
