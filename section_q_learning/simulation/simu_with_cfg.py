@@ -5,7 +5,7 @@
 import pickle
 from section_cmab.agent import Agent
 from section_cmab.algorithms.lp_solvers import primal_dual_recover
-from display_rewards.rewards import display_single_
+from latency_vs_rewards.rewards import display_single_
 
 
 def simulate_with_(algorithm, run=False, config=None, circles=200, perf_file=None, optimal=False, **kwargs):

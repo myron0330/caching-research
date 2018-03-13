@@ -21,11 +21,11 @@ AVAILABLE_MARKERS = ['o', '*', 'p', 's', '^', '<', '>']
 font_properties = font_manager.FontProperties()
 
 
-def display_rewards_(fig_size=(11, 8), line_width=1,
-                     title_size=18, label_size=16, marker_size=10, legend_size=10,
-                     title='', x_label=u'迭代次数', y_label=u'回报收益',
-                     save_path=None, x_axis=None, loc=None,
-                     texts=None, **kwargs):
+def latency_vs_rewards(fig_size=(11, 8), line_width=1,
+                       title_size=18, label_size=16, marker_size=10, legend_size=10,
+                       title='', x_label=u'迭代次数', y_label=u'回报收益',
+                       save_path=None, x_axis=None, loc=None,
+                       texts=None, **kwargs):
     """
     Display multiple simulation rewards
 
@@ -152,4 +152,4 @@ if __name__ == '__main__':
         ],
         'save_path': '../plots/latency_vs_rewards.jpg',
     }
-    display_rewards_(**parameters)
+    latency_vs_rewards(**parameters)

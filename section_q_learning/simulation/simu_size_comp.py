@@ -9,7 +9,7 @@ from collections import OrderedDict
 from os import listdir
 
 import pandas as pd
-from display_rewards.rewards import display_multiple_
+from latency_vs_rewards.rewards import display_multiple_
 
 from section_cmab.algorithms import primal_dual_recover, branch_and_bound
 from section_cmab.simulation.base import simulate_with_
