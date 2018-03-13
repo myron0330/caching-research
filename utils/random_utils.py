@@ -94,3 +94,22 @@ def zipf_array(a, low_bound=None, up_bound=None, size=None, seed=100000):
         candidate = probability_random(values, probabilities, seed=(counter + seed))
         array.append(candidate)
     return array
+
+
+def random_state(rate_array, seed=0):
+    """
+    Generate random state base on rate array.
+
+    Args:
+        rate_array(array like): rate array, sumation is integer and greater than 1.
+        seed(int): random seed
+    """
+    threshold, output = 0, 0
+    random.seed(seed)
+    rand_number = random.randint(1, sum(rate_array))
+    for index, item in enumerate(rate_array):
+        threshold += item
+        if rand_number <= threshold:
+            break
+        output += 1
+    return output

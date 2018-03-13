@@ -28,6 +28,8 @@ class Agent(object):
         self.t_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.c_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
         self.d_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+        self.q_value = 0
+        self.q_values = list()
         self.rewards = list()
 
     @classmethod
@@ -42,18 +44,91 @@ class Agent(object):
         variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
 
-    def iter_with_(self, algorithm, circles=300, dump=True, prefix=''):
+    def iter_with_q_learning_(self, algorithm, circles=300, dump=True, prefix=''):
         """
         algorithm iteration
 
         Args:
-            algorithm(function): algorithm
+            algorithm(func): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             prefix(string): prefix
         """
         while self.t < circles:
-            self._caching_files(algorithm)
+            if self.t == 0:
+                theta_est_bk = self.theta_est_bk
+            else:
+                self.theta_est_bk += self.d_bkt[self.t-1]
+                theta_est_bk = self.theta_est_bk / (self.variables.user_size * self.t)
+                theta_est_bk *= (1 + self.variables.beta * self.c_bkt[self.t-1])
+            self._caching_files(algorithm, theta_est_bk=theta_est_bk, initialize_circles=0)
+            self._observe_demands()
+            self._calculate_rewards()
+            # self._calculate_q_value()
+            self.t += 1
+        if dump:
+            performance_file = \
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                        algorithm.func_name,
+                                                                        self.variables.bs_number,
+                                                                        self.variables.file_number,
+                                                                        self.variables.bs_memory,
+                                                                        self.variables.user_size,
+                                                                        self.variables.zipf_a)
+            pickle.dump(self.rewards, open(performance_file, 'w+'))
+
+            c_bkt_file = \
+                '../performance/{}.c_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.c_bkt, open(c_bkt_file, 'w+'))
+            d_bkt_file = \
+                '../performance/{}.d_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.d_bkt, open(d_bkt_file, 'w+'))
+            # q_value_file = \
+            #     '../performance/{}.Q-value.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+            #                                                             algorithm.func_name,
+            #                                                             self.variables.bs_number,
+            #                                                             self.variables.file_number,
+            #                                                             self.variables.bs_memory,
+            #                                                             self.variables.user_size,
+            #                                                             self.variables.zipf_a)
+            # pickle.dump(self.q_values, open(q_value_file, 'w+'))
+        return self.rewards
+
+    def _calculate_q_value(self):
+        """
+        Calculate q value.
+        """
+        self.q_value = (1 - self.variables.alpha) * self.q_value + self.variables.alpha * sum(self.rewards[-1].values())
+        self.q_values.append(self.q_value)
+
+    def iter_with_(self, algorithm, circles=300, dump=True, prefix=''):
+        """
+        algorithm iteration
+
+        Args:
+            algorithm(func): algorithm
+            circles(int): max iteration circles
+            dump(boolean): whether to dump results
+            prefix(string): prefix
+        """
+        while self.t < circles:
+            if self.t == 0:
+                theta_multiplier = 1
+            else:
+                theta_multiplier = 1 + self.variables.beta * self.c_bkt[self.t-1]
+            self._caching_files(algorithm, theta_multiplier=theta_multiplier)
             self._observe_demands()
             self._mab_update()
             self._calculate_rewards()
@@ -68,6 +143,24 @@ class Agent(object):
                                                                         self.variables.user_size,
                                                                         self.variables.zipf_a)
             pickle.dump(self.rewards, open(performance_file, 'w+'))
+            c_bkt_file = \
+                '../performance/{}.c_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.c_bkt, open(c_bkt_file, 'w+'))
+            d_bkt_file = \
+                '../performance/{}.d_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.d_bkt, open(d_bkt_file, 'w+'))
         return self.rewards
 
     def find_optimal_with_bnd_(self, comparison_algorithm, circles=300, dump=True, fixed_theta=False,
@@ -76,7 +169,7 @@ class Agent(object):
         algorithm iteration
 
         Args:
-            comparison_algorithm(function): algorithm
+            comparison_algorithm(func): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             fixed_theta(boolean): whether to user fixed theta
@@ -123,7 +216,7 @@ class Agent(object):
         algorithm iteration
 
         Args:
-            comparison_algorithm(function): algorithm
+            comparison_algorithm(func): algorithm
             circles(int): max iteration circles
             dump(boolean): whether to dump results
             prefix(string): prefix
@@ -231,12 +324,11 @@ class Agent(object):
         Returns:
             np.array: demands of users in base station bs_identity at time t
         """
-        # 1000000
-        # 100000000
+        offset = 100000000
         return zipf_array(a=self.variables.zipf_a, low_bound=0,
                           up_bound=len(self.variables.files),
                           size=self.variables.users[bs_identity],
-                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+1000000)
+                          seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+offset)
 
     def _observe_demands(self):
         """
@@ -261,19 +353,22 @@ class Agent(object):
                  self.d_bkt[self.t] * self.c_bkt[self.t] / self.variables.user_size) / (self.t_bk + self.c_bkt[self.t])
         self.t_bk += self.c_bkt[self.t]
 
-    def _caching_files(self, algorithm=None, initialize_circles=None):
+    def _caching_files(self, algorithm=None, initialize_circles=None, theta_est_bk=None, theta_multiplier=None):
         """
         Caching files at time slot t
 
         Args:
-            algorithm(function): algorithm
+            algorithm(func): algorithm
             initialize_circles(int): initialize circles
         """
         initialize_circles = initialize_circles if initialize_circles is not None else self.variables.file_number
         if self.t < initialize_circles:
             self.c_bkt[self.t][:, self.variables.file_number - self.t - 1] = 1
         else:
-            self.theta_est_bk = self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
+            self.theta_est_bk = theta_est_bk \
+                if theta_est_bk is not None else self.theta_hat_bk + np.sqrt(3 * np.log(self.t) / (2 * self.t_bk))
+            if theta_multiplier is not None:
+                self.theta_est_bk *= theta_multiplier
             self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t])
 
     def _calculate_rewards(self, alpha=1.):

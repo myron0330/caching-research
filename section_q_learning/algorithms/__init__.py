@@ -6,6 +6,7 @@ from . bnb_solvers import branch_and_bound
 from . lp_solvers import primal_dual_recover
 from . lrfu import lru, lfu
 from . recover import recover_from_
+from . q_learning import global_q_learning
 
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     'primal_dual_recover',
     'lru',
     'lfu',
-    'recover_from_'
+    'recover_from_',
+    'global_q_learning'
 ]

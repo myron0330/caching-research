@@ -190,9 +190,9 @@ if __name__ == '__main__':
         'sigma': 0.5,
         'save_path': '../plots/bs_comparison.jpg'
     }
-    compare_bs_with_(algorithms=[branch_and_bound, primal_dual_recover, lfu, lru],
-                     circles=50, dump=False, prefix='bs', display=False,
-                     **plot_parameters)
+    # compare_bs_with_(algorithms=[branch_and_bound, primal_dual_recover, lfu, lru],
+    #                  circles=50, dump=False, prefix='bs', display=False,
+    #                  **plot_parameters)
     # display_memory_comparison_by_('rewards.primal_dual_recover.4-20-', **plot_parameters)
     # display_memory_iteration(['rewards.branch_and_bound.dynamic.4-20-',
     #                           'rewards.primal_dual_recover.4-20-',

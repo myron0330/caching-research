@@ -2,15 +2,16 @@
 # **********************************************************************************#
 #     File: 
 # **********************************************************************************#
-from section_cmab.agent import Agent
-from section_cmab.algorithms.lp_solvers import primal_dual_recover
-from section_cmab.display.rewards import display_single_
+from section_q_learning.agent import Agent
+from section_q_learning.algorithms.lp_solvers import primal_dual_recover
+from section_q_learning.display.rewards import display_single_
 
 
 def simulate_with_(algorithm, config=None, circles=200, dump=True,
                    algorithm_type='original', fixed_theta=False, prefix='', **kwargs):
     """
     Simulate with parameters.
+
     Args:
         algorithm(function): algorithm
         config(string): config path
@@ -30,6 +31,8 @@ def simulate_with_(algorithm, config=None, circles=200, dump=True,
         algorithm_rewards = agent.iter_with_(algorithm, circles=circles, dump=dump, prefix=prefix)
     elif algorithm_type == 'greedy':
         algorithm_rewards = agent.iter_with_greedy_(algorithm, circles=circles, dump=dump, prefix=prefix)
+    elif algorithm_type == 'global_q_learning':
+        algorithm_rewards = agent.iter_with_q_learning_(algorithm, circles=circles, dump=dump, prefix=prefix)
     else:
         algorithm_rewards = agent.comparison_(algorithm, circles=circles, dump=dump, prefix=prefix)
     return algorithm_rewards

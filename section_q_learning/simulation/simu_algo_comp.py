@@ -3,37 +3,41 @@
 #     File: 
 # **********************************************************************************#
 import pickle
-from collections import OrderedDict
-
 import numpy as np
 import pandas as pd
-
-from section_cmab.algorithms import *
-from section_cmab.display.rewards import display_multiple_, display_single_
-from section_cmab.simulation.base import simulate_with_
+from collections import OrderedDict
+from os import listdir
+from section_q_learning.algorithms import *
+from section_q_learning.display.rewards import display_multiple_, display_single_
+from section_q_learning.display.tools import display_dict_
+from section_q_learning.simulation.base import simulate_with_
 
 algorithm_mapper = {
     'branch_and_bound': 'B&B',
-    'primal_dual_recover': 'Proposed algorithm',
+    'primal_dual_recover': 'CMAB',
     'lfu': 'LFU',
-    'lru': 'LRU'
+    'lru': 'LRU',
+    'global_q_learning': 'Q-learning'
 }
 
 
 def algorithm_comparison(algorithms, comparison_algorithm=None,
                          circles=200, dump=True, fixed_theta=False,
-                         display=True, prefix='', **plot_kwargs):
+                         display=True, prefix='',
+                         with_lfu=True, with_lru=True, **plot_kwargs):
     """
     Algorithm comparison
 
     Args:
-        algorithms(list): algorithm
-        comparison_algorithm(function): comparison algorithm
+        algorithms(list of func): algorithm
+        comparison_algorithm(func): comparison algorithm
         circles(int): circles
         fixed_theta(boolean): fixed theta
         dump(boolean): whether to dump result to file
         display(boolean): whether to display
         prefix(string): prefix
+        with_lfu(boolean): with lfu or not
+        with_lru(boolean): with lru or not
     """
     config = '../cfg/algorithm_comparison.cfg'
     rewards_dict = OrderedDict()
@@ -44,12 +48,18 @@ def algorithm_comparison(algorithms, comparison_algorithm=None,
         # rewards_dict['greedy'] = simulate_with_(comparison_algorithm, config=config, circles=circles,
         #                                         dump=dump, algorithm_type='greedy')
     for algorithm in algorithms:
+        if algorithm.func_name == 'global_q_learning':
+            algorithm_type = 'global_q_learning'
+        else:
+            algorithm_type = 'original'
         rewards_dict[algorithm.func_name] = simulate_with_(algorithm, config=config, circles=circles, prefix=prefix,
-                                                           dump=dump)
-    rewards_dict[lfu.func_name] = simulate_with_(lfu, config=config, circles=circles, dump=dump, prefix=prefix,
-                                                 algorithm_type='comparison')
-    rewards_dict[lru.func_name] = simulate_with_(lru, config=config, circles=circles, dump=dump, prefix=prefix,
-                                                 algorithm_type='comparison')
+                                                           dump=dump, algorithm_type=algorithm_type)
+    if with_lfu:
+        rewards_dict[lfu.func_name] = simulate_with_(lfu, config=config, circles=circles, dump=dump, prefix=prefix,
+                                                     algorithm_type='comparison')
+    if with_lru:
+        rewards_dict[lru.func_name] = simulate_with_(lru, config=config, circles=circles, dump=dump, prefix=prefix,
+                                                     algorithm_type='comparison')
     if display:
         display_multiple_(rewards_dict, **plot_kwargs)
     return rewards_dict
@@ -113,6 +123,8 @@ def display_regret_by_(file_names, **plot_kwargs):
 
 def plot_algorithms_comparison():
     parameters = {
+        'with_q_values': False,
+        'alpha': 0.2,
         'display_length': 50,
         'line_width': 2.5,
         'title_size': 20,
@@ -124,8 +136,8 @@ def plot_algorithms_comparison():
         'y_label': u'',
         'all_curves': True,
         'with_standardize': True,
-        'standardize_init': 25,
-        'sigma': 0.6,
+        'standardize_init': 19,
+        'sigma': 0.5,
         'loc': 4,
         'legend_size': 15,
         'fixed_theta': True,
@@ -151,10 +163,59 @@ def plot_algorithms_comparison():
         ],
         'save_path': '../plots/algorithms_comparison.jpg',
     }
-    display_algorithm_comparison_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-0.9.pk',
-                                      'algorithm.rewards.primal_dual_recover.5-20-100-20-0.9.pk',
-                                      'algorithm.rewards.lfu.5-20-100-20-0.9.pk',
-                                      'algorithm.rewards.lru.5-20-100-20-0.9.pk'], **parameters)
+    directory = listdir('../performance')
+    files = filter(lambda x: x.startswith('algorithm.') and x.endswith('5-20-100-20-0.9.pk'), directory)
+    display_algorithm_comparison_by_(files, **parameters)
+    return None
+
+
+def plot_q_values():
+    parameters = {
+        'with_q_values': True,
+        'alpha': 0.2,
+        'display_length': 50,
+        'line_width': 2.5,
+        'title_size': 20,
+        'label_size': 16,
+        'marker': '',
+        'marker_size': 8,
+        'title': '',
+        'x_label': u'',
+        'y_label': u'',
+        'all_curves': True,
+        'with_standardize': True,
+        'standardize_init': 20,
+        'sigma': 0.6,
+        'loc': 4,
+        'legend_size': 15,
+        'fixed_theta': True,
+        'y_min_lim': 0,
+        'texts': [
+            {
+                'args': (25, -23.5, '$t$'),
+                'kwargs': {
+                    'horizontalalignment': 'center',
+                    'verticalalignment': 'center',
+                    'fontsize': 20,
+                }
+            },
+            {
+                'args': (-2.8, 200, '$R$'),
+                'kwargs': {
+                    'horizontalalignment': 'center',
+                    'verticalalignment': 'center',
+                    'fontsize': 20,
+                    'rotation': 90,
+                }
+            }
+        ],
+        'save_path': '../plots/q_values.jpg',
+    }
+    directory = listdir('../performance')
+    files = filter(lambda x:
+                   x.startswith('algorithm.rewards.global_q_learning')
+                   and x.endswith('5-20-100-20-0.9.pk'), directory)
+    display_algorithm_comparison_by_(files, **parameters)
     return None
 
 
@@ -198,10 +259,80 @@ def plot_regrets_comparison():
         ],
         'save_path': '../plots/regrets_comparison.jpg',
     }
-    display_regret_by_(['algorithm.rewards.branch_and_bound.fixed.5-20-100-20-0.9.pk',
-                        'algorithm.rewards.primal_dual_recover.5-20-100-20-0.9.pk',
-                        'algorithm.rewards.lfu.5-20-100-20-0.9.pk',
-                        'algorithm.rewards.lru.5-20-100-20-0.9.pk'], **parameters)
+    files = filter(lambda x: x.startswith('algorithm.') and x.endswith('5-20-100-20-0.9.pk'), listdir('../performance'))
+    display_regret_by_(files, **parameters)
+
+
+def plots_cache_rate_comparison():
+    """
+    Cache rate comparison.
+    """
+    file_names = filter(lambda x: x.startswith('algorithm.c_bkt') and x.endswith('5-20-100-20-0.9.pk'),
+                        listdir('../performance'))
+    c_bkt_dict = OrderedDict()
+    for file_name in file_names:
+        c_bkt = pickle.load(open('../performance/{}'.format(file_name), 'r+'))
+        algorithm_name = file_name.split('.')[2]
+        c_bkt_dict[algorithm_mapper[algorithm_name]] = c_bkt
+    file_names = filter(lambda x: x.startswith('algorithm.d_bkt') and x.endswith('5-20-100-20-0.9.pk'),
+                        listdir('../performance'))
+    d_bkt_dict = OrderedDict()
+    for file_name in file_names:
+        d_bkt = pickle.load(open('../performance/{}'.format(file_name), 'r+'))
+        algorithm_name = file_name.split('.')[2]
+        d_bkt_dict[algorithm_mapper[algorithm_name]] = d_bkt
+    cache_rates = OrderedDict()
+    for algorithm, c_bkt in c_bkt_dict.iteritems():
+        d_bkt = d_bkt_dict[algorithm]
+        rates = list()
+        for _ in sorted(c_bkt):
+            c = c_bkt[_]
+            d = d_bkt[_]
+            matrix = c * d
+            cache_rate = matrix.sum() / d.sum()
+            rates.append(cache_rate)
+        avg_rates = rates[:1] + [np.average(rates[:_]) for _ in range(1, len(rates))]
+        cache_rates[algorithm] = avg_rates
+    parameters = {
+        'display_length': 100,
+        'line_width': 2.5,
+        'title_size': 20,
+        'label_size': 16,
+        'marker': '',
+        'marker_size': 8,
+        'title': '',
+        'x_label': u'',
+        'y_label': u'',
+        'with_standardize': False,
+        'standardize_init': 0,
+        'sigma': 1.5,
+        'loc': 4,
+        'legend_size': 15,
+        'fixed_theta': True,
+        'y_min_lim': 0,
+        'y_max_lim': 0.7,
+        'texts': [
+            {
+                'args': (1000, -0.345, '$t$'),
+                'kwargs': {
+                    'horizontalalignment': 'center',
+                    'verticalalignment': 'center',
+                    'fontsize': 20,
+                }
+            },
+            {
+                'args': (-80, 3, '$Log(reg)$'),
+                'kwargs': {
+                    'horizontalalignment': 'center',
+                    'verticalalignment': 'center',
+                    'fontsize': 20,
+                    'rotation': 90,
+                }
+            }
+        ],
+        'save_path': '../plots/caching_rate.jpg',
+    }
+    display_dict_(data=cache_rates, **parameters)
 
 
 if __name__ == '__main__':
@@ -227,10 +358,12 @@ if __name__ == '__main__':
         # 'save_path': '../plots/algorithms_comparison.jpg',
     }
     # t_algorithms = [primal_dual_recover]
-    # t_comparison_algorithm = primal_dual_recover
+    # # t_comparison_algorithm = global_q_learning
+    # t_comparison_algorithm = None
     # algorithm_comparison(t_algorithms, comparison_algorithm=t_comparison_algorithm, prefix='algorithm',
-    #                      circles=50, dump=False, **plot_parameters)
+    #                      circles=1000, dump=True, with_lfu=False, with_lru=False, **plot_parameters)
     # algorithm_comparison([primal_dual_recover], comparison_algorithm=primal_dual_recover, prefix='algorithm',
     #                      circles=2000, dump=True, **plot_parameters)
     plot_algorithms_comparison()
-    # plot_regrets_comparison()
+    plot_q_values()
+    plots_cache_rate_comparison()

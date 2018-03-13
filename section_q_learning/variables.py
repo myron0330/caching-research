@@ -13,7 +13,7 @@ class Variables(object):
     """
     def __init__(self, bs_number=None, bs_memory=None, file_number=None, lowest_size=None, highest_size=None,
                  base_stations=None, users=None, user_size=None, files=None, sizes=None, file_info=None,
-                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None):
+                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None, beta=None, alpha=None):
         self.bs_number = bs_number
         self.bs_memory = bs_memory
         self.file_number = file_number
@@ -29,6 +29,8 @@ class Variables(object):
         self.v_bb = v_bb
         self.v_cb = v_cb
         self.zipf_a = zipf_a
+        self.beta = beta
+        self.alpha = alpha
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -62,6 +64,8 @@ class Variables(object):
         v_cb = int(config.get('transmission rates', 'v_cb'))
         zipf_a = float(config.get('zipf', 'zipf_a'))
 
+        beta = float(config.get('algorithm', 'beta'))
+        alpha = float(config.get('algorithm', 'alpha'))
         params = {
             'bs_number': bs_number,
             'bs_memory': bs_memory,
@@ -77,7 +81,9 @@ class Variables(object):
             'v_bd': v_bd,
             'v_bb': v_bb,
             'v_cb': v_cb,
-            'zipf_a': zipf_a
+            'zipf_a': zipf_a,
+            'beta': beta,
+            'alpha': alpha
         }
         return cls(**params)
 
