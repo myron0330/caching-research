@@ -8,7 +8,7 @@ import pickle
 import numpy as np
 from core.basic import BaseStation
 from utils.dict_utils import DefaultDict
-from utils.random_utils import zipf_array
+from utils.random_utils import zipf_array, random_state
 from . algorithms import branch_and_bound, recover_from_
 from . variables import Variables
 from . tools import calculate_rewards
@@ -43,6 +43,22 @@ class Agent(object):
         variables = Variables.from_(cfg_file=cfg_file)
         variables.base_stations = map(lambda x: BaseStation(x, memory=variables.bs_memory), variables.base_stations)
         return cls(variables)
+
+    def generate_markov_random_states(self, current_state_index=None, seed=None):
+        """
+        Generate markov random states based on states and transmission matrix
+
+        Args:
+            current_state_index(int): current state index
+            seed(int): random seed
+        """
+        states = self.variables.states
+        transition = self.variables.transition
+        current_state_index = current_state_index or 0
+        seed = seed or 0
+        prob = transition[current_state_index, :] * 100
+        next_state_index = random_state(prob, seed)
+        return next_state_index, states[next_state_index]
 
     def iter_with_q_learning_(self, algorithm, circles=300, dump=True, prefix=''):
         """

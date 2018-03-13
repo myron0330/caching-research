@@ -123,6 +123,7 @@ def display_regret_by_(file_names, **plot_kwargs):
 
 def plot_algorithms_comparison():
     parameters = {
+        'counter': 1,
         'with_q_values': False,
         'alpha': 0.2,
         'display_length': 50,
@@ -152,7 +153,7 @@ def plot_algorithms_comparison():
                 }
             },
             {
-                'args': (-2.8, 200, '$R$'),
+                'args': (-3.3, 200, '${R_t(S_{t-1}, C_t|\\Theta_t)}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -172,7 +173,7 @@ def plot_algorithms_comparison():
 def plot_q_values():
     parameters = {
         'with_q_values': True,
-        'alpha': 0.2,
+        'alpha': 0.1,
         'display_length': 50,
         'line_width': 2.5,
         'title_size': 20,
@@ -200,7 +201,7 @@ def plot_q_values():
                 }
             },
             {
-                'args': (-2.8, 200, '$R$'),
+                'args': (-3.3, 200, '${\\hat{Q}_t(S_{t-1}, C_t)}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -311,9 +312,10 @@ def plots_cache_rate_comparison():
         'fixed_theta': True,
         'y_min_lim': 0,
         'y_max_lim': 0.7,
+        'counter': 3,
         'texts': [
             {
-                'args': (1000, -0.345, '$t$'),
+                'args': (500, -0.05, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -321,7 +323,7 @@ def plots_cache_rate_comparison():
                 }
             },
             {
-                'args': (-80, 3, '$Log(reg)$'),
+                'args': (-60, 0.35, '$\\overline{H}_{\\bf{1:t}}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',

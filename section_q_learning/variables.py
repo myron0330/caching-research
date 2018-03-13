@@ -2,8 +2,9 @@
 # **********************************************************************************#
 #     File: global variables
 # **********************************************************************************#
-import ConfigParser
 import os
+import ConfigParser
+import numpy as np
 from utils.random_utils import randint_array
 
 
@@ -13,7 +14,7 @@ class Variables(object):
     """
     def __init__(self, bs_number=None, bs_memory=None, file_number=None, lowest_size=None, highest_size=None,
                  base_stations=None, users=None, user_size=None, files=None, sizes=None, file_info=None,
-                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None, beta=None, alpha=None):
+                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None, beta=None, alpha=None, states=None, transition=None):
         self.bs_number = bs_number
         self.bs_memory = bs_memory
         self.file_number = file_number
@@ -31,6 +32,8 @@ class Variables(object):
         self.zipf_a = zipf_a
         self.beta = beta
         self.alpha = alpha
+        self.states = states
+        self.transition = transition
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -66,6 +69,8 @@ class Variables(object):
 
         beta = float(config.get('algorithm', 'beta'))
         alpha = float(config.get('algorithm', 'alpha'))
+        states = eval(config.get('algorithm', 'states'))
+        transition = np.array(eval(config.get('algorithm', 'transition')))
         params = {
             'bs_number': bs_number,
             'bs_memory': bs_memory,
@@ -83,7 +88,9 @@ class Variables(object):
             'v_cb': v_cb,
             'zipf_a': zipf_a,
             'beta': beta,
-            'alpha': alpha
+            'alpha': alpha,
+            'states': states,
+            'transition': transition
         }
         return cls(**params)
 

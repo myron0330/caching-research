@@ -65,7 +65,8 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
                       with_standardize=False, standardize_init=0, sigma=1.5, standardize_special=True,
                       title='', x_label=u'迭代次数', y_label=u'回报收益',
                       save_path=None, x_axis=None, loc=None,
-                      texts=None, with_q_values=False, alpha=0.8, **kwargs):
+                      texts=None, with_q_values=False, alpha=0.8,
+                      counter=1, **kwargs):
     """
     Display multiple simulation rewards
 
@@ -99,8 +100,6 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     ax.spines['top'].set_color('black')
     ax.spines['bottom'].set_color('black')
     max_y, min_y = 0, 1e10
-    counter = 0 if len(rewards_data) == 4 else 1
-
     rewards_curve = OrderedDict()
     for _, reward in rewards_data.iteritems():
         if isinstance(reward[0], dict):
@@ -147,7 +146,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         for reward in reward_list:
             q_values.append(reward * alpha + (1 - alpha)*q_values[-1])
         q_values = q_values[1:]
-        rewards_curve['Q-value'] = q_values
+        rewards_curve['${\\hat{Q}_t(S_{t-1}, C_t)}$'] = q_values
         plt.plot(q_values, '--k', linewidth=line_width,
                  marker='o', markersize=marker_size, markerfacecolor='None',
                  markeredgecolor='k', markeredgewidth=line_width)
