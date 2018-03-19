@@ -14,7 +14,7 @@ from section_q_learning.simulation.base import simulate_with_
 
 algorithm_mapper = {
     'branch_and_bound': 'B&B',
-    'primal_dual_recover': 'CMAB',
+    'primal_dual_recover': 'CUCB-PE',
     'lfu': 'LFU',
     'lru': 'LRU',
     'global_q_learning': 'Q-learning'
@@ -153,7 +153,7 @@ def plot_algorithms_comparison():
                 }
             },
             {
-                'args': (-3.3, 200, '${R_t(S_{t-1}, C_t|\\Theta_t)}$'),
+                'args': (-3.5, 200, '${R_t(S_{t-1}, C_t|\\Theta_t)}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -173,7 +173,7 @@ def plot_algorithms_comparison():
 def plot_q_values():
     parameters = {
         'with_q_values': True,
-        'alpha': 0.1,
+        'alpha': [0.05, 0.1, 0.2, 0.3, 0.4],
         'display_length': 50,
         'line_width': 2.5,
         'title_size': 20,
@@ -201,7 +201,7 @@ def plot_q_values():
                 }
             },
             {
-                'args': (-3.3, 200, '${\\hat{Q}_t(S_{t-1}, C_t)}$'),
+                'args': (-3.5, 200, '${\\hat{Q}_t(S_{t-1}, C_t)}$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',

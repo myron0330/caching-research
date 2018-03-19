@@ -114,7 +114,7 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
             curve = reward
         if with_standardize:
             if standardize_special:
-                if _ in ['CMAB']:
+                if _ in ['CUCB-PE']:
                     curve = curve[:standardize_init] + standardize_(curve[standardize_init:], sigma=sigma)
                 elif _ in ['Q-learning']:
                     curve = curve[:5] + standardize_(curve[5:], sigma=sigma)
@@ -127,29 +127,36 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
         rewards_curve['B&B'] = list(1.02 * np.max(np.array(rewards_curve.values()), axis=0))
         # rewards_curve['B&B'] = [380] * len(rewards_curve['B&B'])
 
-    for _, curve in rewards_curve.iteritems():
-        current_marker = marker
-        if marker == '':
-            current_marker = AVAILABLE_MARKERS[counter % len(AVAILABLE_MARKERS)]
-        if x_axis is not None:
-            plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
-                     marker=current_marker, markersize=marker_size, markerfacecolor='None',
-                     markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
-        else:
-            plt.plot(curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
-                     marker=current_marker, markersize=marker_size, markerfacecolor='None',
-                     markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
-        counter += 1
     if with_q_values and 'Q-learning' in rewards_curve:
         reward_list = rewards_curve['Q-learning']
-        q_values = [0]
-        for reward in reward_list:
-            q_values.append(reward * alpha + (1 - alpha)*q_values[-1])
-        q_values = q_values[1:]
-        rewards_curve['${\\hat{Q}_t(S_{t-1}, C_t)}$'] = q_values
-        plt.plot(q_values, '--k', linewidth=line_width,
-                 marker='o', markersize=marker_size, markerfacecolor='None',
-                 markeredgecolor='k', markeredgewidth=line_width)
+        alpha = alpha if isinstance(alpha, (list, tuple)) else [alpha]
+        legend = list()
+        for _, a in enumerate(alpha):
+            marker = AVAILABLE_MARKERS[_ % len(AVAILABLE_MARKERS)]
+            q_values = [0]
+            for reward in reward_list:
+                q_values.append(reward * a + (1 - a)*q_values[-1])
+            q_values = q_values[1:]
+            rewards_curve['${\\hat{Q}_t(S_{t-1}, C_t)}$'] = q_values
+            plt.plot(q_values, color=DEFAULT_COLORS.get(_), linewidth=line_width,
+                     marker=marker, markersize=marker_size, markerfacecolor='None',
+                     markeredgecolor=DEFAULT_COLORS.get(_), markeredgewidth=line_width)
+            legend.append('$\\alpha_t = {}$'.format(a))
+    else:
+        for _, curve in rewards_curve.iteritems():
+            current_marker = marker
+            if marker == '':
+                current_marker = AVAILABLE_MARKERS[counter % len(AVAILABLE_MARKERS)]
+            if x_axis is not None:
+                plt.plot(x_axis, curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
+                         marker=current_marker, markersize=marker_size, markerfacecolor='None',
+                         markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
+            else:
+                plt.plot(curve, color=DEFAULT_COLORS.get(counter), linewidth=line_width,
+                         marker=current_marker, markersize=marker_size, markerfacecolor='None',
+                         markeredgecolor=DEFAULT_COLORS.get(counter), markeredgewidth=line_width)
+            counter += 1
+        legend = rewards_curve.keys()
     plt.title(title, fontsize=title_size, verticalalignment='bottom',
               horizontalalignment='center', color='k', fontproperties=font_properties)
     font_properties.set_size(label_size)
@@ -158,7 +165,6 @@ def display_multiple_(rewards_data, display_length=500, fig_size=(12, 8), line_w
     plt.ylabel(y_label, fontsize=label_size, verticalalignment='bottom',
                horizontalalignment='center', rotation=90,  fontproperties=font_properties)
     # legend = map(lambda x: x.upper(), rewards_data.keys())
-    legend = rewards_curve.keys()
     diff_y = max_y - min_y
     y_min_lim = kwargs.get('y_min_lim', min_y - diff_y * 0.05)
     y_max_lim = kwargs.get('y_max_lim', max_y + diff_y * 0.05)
