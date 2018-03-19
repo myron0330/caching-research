@@ -6,6 +6,7 @@ from __future__ import division
 import heapq
 import pickle
 import numpy as np
+from copy import copy
 from core.basic import BaseStation
 from utils.dict_utils import DefaultDict
 from utils.random_utils import zipf_array, random_state
@@ -28,6 +29,7 @@ class Agent(object):
         self.t_bk = np.zeros((self.variables.bs_number, self.variables.file_number))
         self.c_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
         self.d_bkt = DefaultDict(np.zeros((self.variables.bs_number, self.variables.file_number)))
+        self.bs_network = self.variables.bs_network
         self.q_value = 0
         self.q_values = list()
         self.rewards = list()
@@ -60,6 +62,82 @@ class Agent(object):
         next_state_index = random_state(prob, seed)
         return next_state_index, states[next_state_index]
 
+    def iter_with_distributed_q_learning_(self, algorithm, circles=300, dump=True, prefix=''):
+        """
+        algorithm iteration
+
+        Args:
+            algorithm(func): algorithm
+            circles(int): max iteration circles
+            dump(boolean): whether to dump results
+            prefix(string): prefix
+        """
+        bs_index = {key: [key] + sorted(value.keys()) for key, value in self.bs_network.adj.iteritems()}
+        bs_variables = dict()
+        for bs, index in bs_index.iteritems():
+            variable = copy(self.variables)
+            variable.bs_number = len(index)
+            variable.base_stations = [value for _, value in enumerate(variable.base_stations) if _ in index]
+            variable.users = [value for _, value in enumerate(variable.users) if _ in index]
+            bs_variables[bs] = variable
+        while self.t < circles:
+            if self.t == 0:
+                theta_est_bk = self.theta_est_bk
+            else:
+                self.theta_est_bk += self.d_bkt[self.t-1]
+                theta_est_bk = self.theta_est_bk / (self.variables.user_size * self.t)
+                theta_est_bk *= (1 + self.variables.beta * self.c_bkt[self.t-1])
+            for bs, index in bs_index.iteritems():
+                bs_theta_est_bk = theta_est_bk[index, :]
+                bs_variable = bs_variables[bs]
+                bs_d_bkt = self.d_bkt[self.t][index, :]
+                caching_result = self.caching_files_by_parameters(algorithm=algorithm, variable=bs_variable,
+                                                                  theta_est_bk=bs_theta_est_bk, d_bkt=bs_d_bkt)
+                self.c_bkt[self.t][bs, :] = caching_result[0, :]
+            self.observe_demands()
+            self.calculate_rewards()
+            self.t += 1
+        if dump:
+            performance_file = \
+                '../performance/{}.rewards.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                        algorithm.func_name,
+                                                                        self.variables.bs_number,
+                                                                        self.variables.file_number,
+                                                                        self.variables.bs_memory,
+                                                                        self.variables.user_size,
+                                                                        self.variables.zipf_a)
+            pickle.dump(self.rewards, open(performance_file, 'w+'))
+
+            c_bkt_file = \
+                '../performance/{}.c_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.c_bkt, open(c_bkt_file, 'w+'))
+            d_bkt_file = \
+                '../performance/{}.d_bkt.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+                                                                      algorithm.func_name,
+                                                                      self.variables.bs_number,
+                                                                      self.variables.file_number,
+                                                                      self.variables.bs_memory,
+                                                                      self.variables.user_size,
+                                                                      self.variables.zipf_a)
+            pickle.dump(self.d_bkt, open(d_bkt_file, 'w+'))
+            # q_value_file = \
+            #     '../performance/{}.Q-value.{}.{}-{}-{}-{}-{}.pk'.format(prefix,
+            #                                                             algorithm.func_name,
+            #                                                             self.variables.bs_number,
+            #                                                             self.variables.file_number,
+            #                                                             self.variables.bs_memory,
+            #                                                             self.variables.user_size,
+            #                                                             self.variables.zipf_a)
+            # pickle.dump(self.q_values, open(q_value_file, 'w+'))
+        return self.rewards
+
+
     def iter_with_q_learning_(self, algorithm, circles=300, dump=True, prefix=''):
         """
         algorithm iteration
@@ -77,9 +155,9 @@ class Agent(object):
                 self.theta_est_bk += self.d_bkt[self.t-1]
                 theta_est_bk = self.theta_est_bk / (self.variables.user_size * self.t)
                 theta_est_bk *= (1 + self.variables.beta * self.c_bkt[self.t-1])
-            self._caching_files(algorithm, theta_est_bk=theta_est_bk, initialize_circles=0)
-            self._observe_demands()
-            self._calculate_rewards()
+            self.caching_files(algorithm, theta_est_bk=theta_est_bk, initialize_circles=0)
+            self.observe_demands()
+            self.calculate_rewards()
             # self._calculate_q_value()
             self.t += 1
         if dump:
@@ -144,10 +222,10 @@ class Agent(object):
                 theta_multiplier = 1
             else:
                 theta_multiplier = 1 + self.variables.beta * self.c_bkt[self.t-1]
-            self._caching_files(algorithm, theta_multiplier=theta_multiplier)
-            self._observe_demands()
+            self.caching_files(algorithm, theta_multiplier=theta_multiplier)
+            self.observe_demands()
             self._mab_update()
-            self._calculate_rewards()
+            self.calculate_rewards()
             self.t += 1
         if dump:
             performance_file = \
@@ -197,11 +275,11 @@ class Agent(object):
         theta_est_bk = np.array([[zipf_func(_ + 1, self.variables.file_number)
                                   for _ in xrange(self.variables.file_number)]] * self.variables.bs_number)
         while self.t < circles:
-            self._caching_files(comparison_algorithm)
+            self.caching_files(comparison_algorithm)
             theta_est_bkt[self.t] = self.theta_est_bk if not fixed_theta else theta_est_bk
-            self._observe_demands()
+            self.observe_demands()
             self._mab_update()
-            self._calculate_rewards()
+            self.calculate_rewards()
             self.t += 1
         self.t = 0
         rewards = list()
@@ -239,11 +317,11 @@ class Agent(object):
         """
         theta_est_bkt = dict()
         while self.t < circles:
-            self._caching_files(comparison_algorithm)
+            self.caching_files(comparison_algorithm)
             theta_est_bkt[self.t] = self.theta_est_bk
-            self._observe_demands()
+            self.observe_demands()
             self._mab_update()
-            self._calculate_rewards()
+            self.calculate_rewards()
             self.t += 1
 
         self.t = 0
@@ -307,8 +385,8 @@ class Agent(object):
                     else:
                         tail[bs] = f
                         break
-            self._observe_demands()
-            self._calculate_rewards()
+            self.observe_demands()
+            self.calculate_rewards()
             self.t += 1
         if dump:
             performance_file = \
@@ -346,7 +424,7 @@ class Agent(object):
                           size=self.variables.users[bs_identity],
                           seed=(self.t * self.variables.bs_number + bs_identity) * self.variables.user_size+offset)
 
-    def _observe_demands(self):
+    def observe_demands(self):
         """
         Observe demands at time slot t
         """
@@ -369,13 +447,16 @@ class Agent(object):
                  self.d_bkt[self.t] * self.c_bkt[self.t] / self.variables.user_size) / (self.t_bk + self.c_bkt[self.t])
         self.t_bk += self.c_bkt[self.t]
 
-    def _caching_files(self, algorithm=None, initialize_circles=None, theta_est_bk=None, theta_multiplier=None):
+    def caching_files(self, algorithm=None, initialize_circles=None,
+                      theta_est_bk=None, theta_multiplier=None):
         """
         Caching files at time slot t
 
         Args:
             algorithm(func): algorithm
             initialize_circles(int): initialize circles
+            theta_est_bk(matrix): theta_est_bk
+            theta_multiplier(float): theta multiplier
         """
         initialize_circles = initialize_circles if initialize_circles is not None else self.variables.file_number
         if self.t < initialize_circles:
@@ -387,7 +468,17 @@ class Agent(object):
                 self.theta_est_bk *= theta_multiplier
             self.c_bkt[self.t] = algorithm(self.variables, self.theta_est_bk, d_bkt=self.d_bkt[self.t])
 
-    def _calculate_rewards(self, alpha=1.):
+    @staticmethod
+    def caching_files_by_parameters(algorithm=None, variable=None, theta_est_bk=None,
+                                    theta_multiplier=None, d_bkt=None):
+        """
+        Caching files by parameters
+        """
+        if theta_multiplier is not None:
+            theta_est_bk *= theta_multiplier
+        return algorithm(variable, theta_est_bk, d_bkt=d_bkt)
+
+    def calculate_rewards(self, alpha=1.):
         """
         Calculate rewards of users
         """

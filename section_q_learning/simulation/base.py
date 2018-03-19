@@ -33,6 +33,9 @@ def simulate_with_(algorithm, config=None, circles=200, dump=True,
         algorithm_rewards = agent.iter_with_greedy_(algorithm, circles=circles, dump=dump, prefix=prefix)
     elif algorithm_type == 'global_q_learning':
         algorithm_rewards = agent.iter_with_q_learning_(algorithm, circles=circles, dump=dump, prefix=prefix)
+    elif algorithm_type == 'distributed_q_learning':
+        algorithm_rewards = agent.iter_with_distributed_q_learning_(algorithm, circles=circles,
+                                                                    dump=dump, prefix=prefix)
     else:
         algorithm_rewards = agent.comparison_(algorithm, circles=circles, dump=dump, prefix=prefix)
     return algorithm_rewards

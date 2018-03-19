@@ -3,6 +3,7 @@
 #     File: global variables
 # **********************************************************************************#
 import os
+import pickle
 import ConfigParser
 import numpy as np
 from utils.random_utils import randint_array
@@ -14,7 +15,8 @@ class Variables(object):
     """
     def __init__(self, bs_number=None, bs_memory=None, file_number=None, lowest_size=None, highest_size=None,
                  base_stations=None, users=None, user_size=None, files=None, sizes=None, file_info=None,
-                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None, beta=None, alpha=None, states=None, transition=None):
+                 v_bd=None, v_bb=None, v_cb=None, zipf_a=None, beta=None, alpha=None, states=None,
+                 transition=None, bs_network=None):
         self.bs_number = bs_number
         self.bs_memory = bs_memory
         self.file_number = file_number
@@ -34,6 +36,7 @@ class Variables(object):
         self.alpha = alpha
         self.states = states
         self.transition = transition
+        self.bs_network = bs_network
 
     @classmethod
     def from_(cls, cfg_file=None):
@@ -71,6 +74,14 @@ class Variables(object):
         alpha = float(config.get('algorithm', 'alpha'))
         states = eval(config.get('algorithm', 'states'))
         transition = np.array(eval(config.get('algorithm', 'transition')))
+        distributed = config.get('algorithm', 'distributed') == 'True'
+
+        bs_network = pickle.load(open('/'.join([current_path, config.get('network', 'bs_network')]), 'r+'))
+        if distributed:
+            bs_number = bs_network.node_number
+            base_stations = bs_network.nodes
+            users = randint_array(low_bound=user_size, up_bound=user_size, size=bs_number)
+
         params = {
             'bs_number': bs_number,
             'bs_memory': bs_memory,
@@ -90,7 +101,8 @@ class Variables(object):
             'beta': beta,
             'alpha': alpha,
             'states': states,
-            'transition': transition
+            'transition': transition,
+            'bs_network': bs_network
         }
         return cls(**params)
 
