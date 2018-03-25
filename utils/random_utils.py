@@ -113,3 +113,23 @@ def random_state(rate_array, seed=0):
             break
         output += 1
     return output
+
+
+def random_choose_(percent=0.05, lower_bound=0, upper_bound=100, matrix_size=2000, seed=0):
+    """
+    Random choose.
+    Args:
+        percent:
+        lower_bound:
+        upper_bound:
+        matrix_size:
+        seed:
+    Returns:
+
+    """
+    result = set()
+    while len(result) < int(percent * matrix_size):
+        random.seed(seed)
+        result.add(random.randint(lower_bound, upper_bound))
+        seed += 1
+    return result

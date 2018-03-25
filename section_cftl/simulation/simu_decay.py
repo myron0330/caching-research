@@ -41,7 +41,7 @@ def display_latency_by_(**plot_kwargs):
         path = '/'.join([relative_path, latency])
         decay = latency.split('-')[-1][:-3]
         rewards = pickle.load(open(path, 'r+'))
-        latency_data[decay] = rewards
+        latency_data['$\\lambda = $' + decay] = rewards
     display_latency(latency_data, **plot_kwargs)
 
 
@@ -59,9 +59,11 @@ if __name__ == '__main__':
         'y_label': u'',
         'loc': 'best',
         'legend_size': 15,
+        'y_min_lim': 0,
+        'y_max_lim': 200,
         'texts': [
             {
-                'args': (25, 5, '$t$'),
+                'args': (25, -15, '$t$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
@@ -69,7 +71,7 @@ if __name__ == '__main__':
                 }
             },
             {
-                'args': (-3, 100, '$l$'),
+                'args': (-3.8, 100, '$f(\\bf{X}_t, y_t)$'),
                 'kwargs': {
                     'horizontalalignment': 'center',
                     'verticalalignment': 'center',
